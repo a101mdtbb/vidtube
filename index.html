@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VidTube</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
     :root {
@@ -297,7 +297,7 @@ create policy "public insert" on videos for insert with check (true);</pre>
   </details>
   <div class="config-fields">
     <input id="cfg-url" type="text" placeholder="Project URL  →  https://xxxx.supabase.co" />
-    <input id="cfg-key" type="text" placeholder="anon/public key  →  eyJhbGci…" />
+    <input id="cfg-key" type="text" placeholder="Publishable key  →  sb_publishable_…" />
     <button class="btn-save" onclick="saveConfig()">Guardar y conectar</button>
   </div>
 </div>
@@ -394,6 +394,8 @@ function saveConfig() {
 }
 
 function initSupabase(url, key) {
+  // Supabase nuevo formato (sb_publishable_...) usa supabaseKey como está
+  // Formato viejo (eyJ...) también funciona igual
   sbClient = window.supabase.createClient(url, key);
 }
 
