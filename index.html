@@ -6,72 +6,52 @@
   <title>VidTube</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
-    /* ── TOKENS ─────────────────────────────────────── */
     :root {
-      --bg:        #0f0f0f;
-      --surface:   #1a1a1a;
-      --surface2:  #272727;
-      --border:    #2e2e2e;
-      --accent:    #ff4444;
-      --accent2:   #ff6b6b;
-      --text:      #f1f1f1;
-      --muted:     #aaaaaa;
-      --radius:    10px;
-      --font:      'Segoe UI', system-ui, sans-serif;
+      --bg:       #0f0f0f;
+      --surface:  #1a1a1a;
+      --surface2: #272727;
+      --border:   #2e2e2e;
+      --accent:   #ff4444;
+      --accent2:  #ff6b6b;
+      --text:     #f1f1f1;
+      --muted:    #aaaaaa;
+      --radius:   10px;
+      --font:     'Segoe UI', system-ui, sans-serif;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      min-height: 100vh;
-    }
-
-    /* ── NAVBAR ─────────────────────────────────────── */
+    /* NAV */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(15,15,15,0.92);
-      backdrop-filter: blur(12px);
+      background: rgba(15,15,15,0.92); backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center;
-      padding: 0 24px; height: 56px; gap: 16px;
+      display: flex; align-items: center; padding: 0 24px; height: 56px; gap: 16px;
     }
-    .logo {
-      font-size: 1.4rem; font-weight: 800;
-      color: var(--accent); letter-spacing: -1px;
-      text-decoration: none; white-space: nowrap;
-    }
+    .logo { font-size: 1.4rem; font-weight: 800; color: var(--accent); letter-spacing: -1px; text-decoration: none; white-space: nowrap; }
     .logo span { color: var(--text); }
-    .search-bar {
-      flex: 1; max-width: 520px; margin: 0 auto;
-      display: flex; gap: 0;
-    }
+    .search-bar { flex: 1; max-width: 520px; margin: 0 auto; display: flex; }
     .search-bar input {
       flex: 1; background: var(--surface); border: 1px solid var(--border);
       border-right: none; border-radius: var(--radius) 0 0 var(--radius);
-      padding: 8px 16px; color: var(--text); font-size: 0.95rem;
-      outline: none; transition: border-color .2s;
+      padding: 8px 16px; color: var(--text); font-size: 0.95rem; outline: none; transition: border-color .2s;
     }
     .search-bar input:focus { border-color: var(--accent); }
     .search-bar button {
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 0 var(--radius) var(--radius) 0;
-      padding: 8px 16px; color: var(--muted); cursor: pointer;
-      font-size: 1rem; transition: background .2s;
+      padding: 8px 16px; color: var(--muted); cursor: pointer; font-size: 1rem; transition: background .2s;
     }
     .search-bar button:hover { background: var(--border); }
     .btn-upload {
       background: var(--accent); color: #fff; border: none;
       padding: 8px 18px; border-radius: var(--radius);
       font-weight: 600; cursor: pointer; font-size: 0.9rem;
-      display: flex; align-items: center; gap: 6px;
-      transition: background .2s; white-space: nowrap;
+      display: flex; align-items: center; gap: 6px; transition: background .2s; white-space: nowrap;
     }
     .btn-upload:hover { background: var(--accent2); }
 
-    /* ── CONFIG BANNER ──────────────────────────────── */
+    /* CONFIG BANNER */
     #config-banner {
       background: linear-gradient(135deg, #1a0a0a, #2a1010);
       border: 1px solid #5a1010; border-radius: var(--radius);
@@ -93,49 +73,38 @@
     }
     .btn-save:hover { background: var(--accent2); }
 
-    /* ── MAIN LAYOUT ────────────────────────────────── */
+    /* MAIN */
     main { max-width: 1280px; margin: 0 auto; padding: 24px 16px; }
 
-    /* ── GRID ───────────────────────────────────────── */
+    /* GRID */
     #grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 20px;
     }
 
-    /* ── CARD ───────────────────────────────────────── */
+    /* CARD */
     .card {
       background: var(--surface); border-radius: var(--radius);
       overflow: hidden; cursor: pointer;
       transition: transform .2s, box-shadow .2s;
       border: 1px solid transparent;
     }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 32px rgba(0,0,0,.6);
-      border-color: var(--border);
-    }
-    .thumb {
-      width: 100%; aspect-ratio: 16/9;
-      object-fit: cover; display: block;
-      background: var(--surface2);
-    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,.6); border-color: var(--border); }
+    .thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--surface2); }
     .thumb-placeholder {
       width: 100%; aspect-ratio: 16/9;
       background: linear-gradient(135deg, var(--surface2), #1e1e2e);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.5rem;
+      display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
     }
     .card-info { padding: 12px; }
     .card-title {
-      font-size: 0.95rem; font-weight: 600;
-      line-height: 1.4; margin-bottom: 6px;
-      display: -webkit-box; -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical; overflow: hidden;
+      font-size: 0.95rem; font-weight: 600; line-height: 1.4; margin-bottom: 6px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .card-meta { font-size: 0.8rem; color: var(--muted); }
 
-    /* ── MODAL OVERLAY ──────────────────────────────── */
+    /* OVERLAY */
     .overlay {
       display: none; position: fixed; inset: 0; z-index: 200;
       background: rgba(0,0,0,.85); backdrop-filter: blur(4px);
@@ -143,11 +112,10 @@
     }
     .overlay.open { display: flex; }
 
-    /* ── UPLOAD MODAL ───────────────────────────────── */
+    /* UPLOAD MODAL */
     .modal {
       background: var(--surface); border-radius: 14px;
-      width: 100%; max-width: 540px;
-      border: 1px solid var(--border); overflow: hidden;
+      width: 100%; max-width: 540px; border: 1px solid var(--border); overflow: hidden;
     }
     .modal-header {
       display: flex; align-items: center; justify-content: space-between;
@@ -157,8 +125,7 @@
     .btn-close {
       background: none; border: none; color: var(--muted);
       font-size: 1.4rem; cursor: pointer; line-height: 1;
-      padding: 2px 6px; border-radius: 6px;
-      transition: background .15s;
+      padding: 2px 6px; border-radius: 6px; transition: background .15s;
     }
     .btn-close:hover { background: var(--surface2); color: var(--text); }
     .modal-body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
@@ -167,38 +134,20 @@
     .modal-body textarea {
       width: 100%; background: var(--bg); border: 1px solid var(--border);
       border-radius: 8px; padding: 10px 14px; color: var(--text);
-      font-size: 0.9rem; outline: none; font-family: var(--font);
-      transition: border-color .2s;
+      font-size: 0.9rem; outline: none; font-family: var(--font); transition: border-color .2s;
     }
     .modal-body input:focus,
     .modal-body textarea:focus { border-color: var(--accent); }
     .modal-body textarea { resize: vertical; min-height: 72px; }
 
-    .drop-zone {
-      border: 2px dashed var(--border); border-radius: 10px;
-      padding: 32px; text-align: center; cursor: pointer;
-      transition: border-color .2s, background .2s;
-      position: relative;
+    /* PREVIEW */
+    .yt-preview {
+      display: none; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden;
     }
-    .drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: rgba(255,68,68,.05); }
-    .drop-zone input[type=file] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer;
-      width: 100%; height: 100%;
-    }
-    .drop-icon { font-size: 2.2rem; margin-bottom: 8px; }
-    .drop-text { font-size: 0.9rem; color: var(--muted); }
-    .drop-text strong { color: var(--text); }
-    .file-chosen { font-size: 0.82rem; color: var(--accent); margin-top: 6px; }
+    .yt-preview iframe { width: 100%; aspect-ratio: 16/9; display: block; border: none; }
+    .yt-preview-info { padding: 10px 12px; font-size: 0.82rem; color: var(--muted); }
 
-    .progress-wrap {
-      height: 6px; background: var(--surface2); border-radius: 99px;
-      overflow: hidden; display: none;
-    }
-    .progress-bar {
-      height: 100%; width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 99px; transition: width .3s;
-    }
     .btn-submit {
       background: var(--accent); color: #fff; border: none;
       padding: 11px; border-radius: 8px; font-weight: 700;
@@ -207,30 +156,23 @@
     .btn-submit:hover { background: var(--accent2); }
     .btn-submit:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
 
-    /* ── VIDEO PLAYER MODAL ─────────────────────────── */
+    /* PLAYER MODAL */
     .player-modal {
       background: var(--surface); border-radius: 14px;
-      width: 100%; max-width: 900px;
-      border: 1px solid var(--border); overflow: hidden;
+      width: 100%; max-width: 900px; border: 1px solid var(--border); overflow: hidden;
     }
-    .player-modal video {
-      width: 100%; max-height: 60vh;
-      background: #000; display: block;
-    }
+    .player-modal iframe { width: 100%; aspect-ratio: 16/9; display: block; border: none; background: #000; }
     .player-info { padding: 18px 22px; }
     .player-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
     .player-meta  { font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; }
     .player-desc  { font-size: 0.9rem; color: #ccc; line-height: 1.6; }
 
-    /* ── EMPTY STATE ────────────────────────────────── */
-    #empty {
-      grid-column: 1/-1; text-align: center;
-      padding: 80px 20px; color: var(--muted);
-    }
+    /* EMPTY */
+    #empty { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--muted); }
     #empty .empty-icon { font-size: 4rem; margin-bottom: 16px; }
     #empty h3 { font-size: 1.2rem; color: var(--text); margin-bottom: 8px; }
 
-    /* ── TOAST ──────────────────────────────────────── */
+    /* TOAST */
     #toast {
       position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
       background: #222; color: var(--text); padding: 11px 22px;
@@ -242,59 +184,37 @@
     #toast.show { opacity: 1; }
     #toast.error { border-color: var(--accent); color: var(--accent); }
 
-    /* ── LOADER ─────────────────────────────────────── */
-    .spinner {
-      width: 36px; height: 36px; margin: 60px auto;
-      border: 3px solid var(--surface2);
-      border-top-color: var(--accent);
-      border-radius: 50%; animation: spin .7s linear infinite;
-    }
+    /* LOADER */
+    .spinner { width: 36px; height: 36px; margin: 60px auto; border: 3px solid var(--surface2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* HINT */
+    .yt-hint {
+      background: var(--surface2); border-radius: 8px; padding: 12px 14px;
+      font-size: 0.82rem; color: var(--muted); line-height: 1.6;
+    }
+    .yt-hint strong { color: var(--text); }
 
     @media (max-width: 600px) {
       nav { padding: 0 12px; gap: 10px; }
-      .search-bar { max-width: 100%; }
       .logo { font-size: 1.1rem; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav>
   <a class="logo" href="#">Vid<span>Tube</span></a>
   <div class="search-bar">
     <input type="text" id="search-input" placeholder="Buscar videos…" />
     <button onclick="doSearch()">🔍</button>
   </div>
-  <button class="btn-upload" onclick="openUpload()">＋ Subir</button>
+  <button class="btn-upload" onclick="openUpload()">＋ Agregar</button>
 </nav>
 
-<!-- CONFIG BANNER (shown when not configured) -->
 <div id="config-banner" style="display:none">
   <h2>⚙️ Configurar Supabase</h2>
-  <p>
-    Para activar la plataforma necesitas una cuenta gratuita en
-    <a href="https://supabase.com" target="_blank" style="color:var(--accent)">supabase.com</a>.<br>
-    Crea un proyecto, luego una tabla <code>videos</code> y un bucket de Storage llamado <code>videos</code>.
-    Pega tus credenciales aquí — se guardan solo en tu navegador.
-  </p>
-  <details style="margin-bottom:14px;color:var(--muted);font-size:.83rem">
-    <summary style="cursor:pointer;color:var(--text);margin-bottom:8px">📋 SQL para crear la tabla (haz clic)</summary>
-    <pre style="background:var(--bg);padding:14px;border-radius:8px;overflow-x:auto;margin-top:8px;border:1px solid var(--border)">create table videos (
-  id uuid default gen_random_uuid() primary key,
-  title text not null,
-  description text,
-  video_url text not null,
-  thumb_url text,
-  created_at timestamptz default now()
-);
-
--- Habilitar acceso público (RLS off para demo)
-alter table videos enable row level security;
-create policy "public read" on videos for select using (true);
-create policy "public insert" on videos for insert with check (true);</pre>
-  </details>
+  <p>Pega tus credenciales de <a href="https://supabase.com" target="_blank" style="color:var(--accent)">supabase.com</a> para activar la plataforma.</p>
   <div class="config-fields">
     <input id="cfg-url" type="text" placeholder="Project URL  →  https://xxxx.supabase.co" />
     <input id="cfg-key" type="text" placeholder="Publishable key  →  sb_publishable_…" />
@@ -302,7 +222,6 @@ create policy "public insert" on videos for insert with check (true);</pre>
   </div>
 </div>
 
-<!-- MAIN -->
 <main>
   <div id="loader" class="spinner"></div>
   <div id="grid"></div>
@@ -312,10 +231,24 @@ create policy "public insert" on videos for insert with check (true);</pre>
 <div class="overlay" id="upload-overlay">
   <div class="modal">
     <div class="modal-header">
-      <h2>Subir video</h2>
+      <h2>Agregar video de YouTube</h2>
       <button class="btn-close" onclick="closeUpload()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="yt-hint">
+        <strong>¿Cómo funciona?</strong><br>
+        1. Sube tu video a YouTube como <strong>No listado</strong><br>
+        2. Copia el link y pégalo aquí<br>
+        3. Se reproducirá directo en VidTube sin mostrar YouTube
+      </div>
+      <div>
+        <label>Link de YouTube *</label>
+        <input id="up-url" type="text" placeholder="https://www.youtube.com/watch?v=... o https://youtu.be/..." oninput="onUrlInput(this.value)" />
+      </div>
+      <div class="yt-preview" id="yt-preview">
+        <iframe id="preview-iframe" allowfullscreen></iframe>
+        <div class="yt-preview-info" id="preview-info"></div>
+      </div>
       <div>
         <label>Título *</label>
         <input id="up-title" type="text" placeholder="Dale un título a tu video" />
@@ -324,24 +257,7 @@ create policy "public insert" on videos for insert with check (true);</pre>
         <label>Descripción</label>
         <textarea id="up-desc" placeholder="¿De qué trata el video?"></textarea>
       </div>
-      <div>
-        <label>Archivo de video *</label>
-        <div class="drop-zone" id="drop-zone">
-          <input type="file" id="video-file" accept="video/*" onchange="onFileChosen(this)" />
-          <div class="drop-icon">🎬</div>
-          <div class="drop-text"><strong>Arrastra un video aquí</strong> o haz clic para seleccionar</div>
-          <div class="drop-text" style="margin-top:4px;font-size:.78rem">MP4, WebM, MOV — máx. 500 MB</div>
-          <div class="file-chosen" id="file-name"></div>
-        </div>
-      </div>
-      <div>
-        <label>Thumbnail (opcional — URL de imagen)</label>
-        <input id="up-thumb" type="text" placeholder="https://…/imagen.jpg" />
-      </div>
-      <div class="progress-wrap" id="progress-wrap">
-        <div class="progress-bar" id="progress-bar"></div>
-      </div>
-      <button class="btn-submit" id="btn-submit" onclick="uploadVideo()">Publicar video</button>
+      <button class="btn-submit" id="btn-submit" onclick="submitVideo()">Publicar video</button>
     </div>
   </div>
 </div>
@@ -353,7 +269,7 @@ create policy "public insert" on videos for insert with check (true);</pre>
       <span></span>
       <button class="btn-close" onclick="closePlayer()">✕</button>
     </div>
-    <video id="player-video" controls preload="metadata"></video>
+    <iframe id="player-iframe" allowfullscreen></iframe>
     <div class="player-info">
       <div class="player-title" id="player-title"></div>
       <div class="player-meta"  id="player-meta"></div>
@@ -362,26 +278,20 @@ create policy "public insert" on videos for insert with check (true);</pre>
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────
 const STORAGE_KEY_URL = 'vt_supabase_url';
 const STORAGE_KEY_KEY = 'vt_supabase_key';
-const BUCKET = 'videos';
-const TABLE  = 'videos';
+const TABLE = 'videos';
 
 let sbClient = null;
 let allVideos = [];
 
+// ── CONFIG ────────────────────────────────────────────
 function getConfig() {
-  return {
-    url: localStorage.getItem(STORAGE_KEY_URL) || '',
-    key: localStorage.getItem(STORAGE_KEY_KEY) || '',
-  };
+  return { url: localStorage.getItem(STORAGE_KEY_URL)||'', key: localStorage.getItem(STORAGE_KEY_KEY)||'' };
 }
-
 function saveConfig() {
   const url = document.getElementById('cfg-url').value.trim();
   const key = document.getElementById('cfg-key').value.trim();
@@ -392,33 +302,52 @@ function saveConfig() {
   initSupabase(url, key);
   loadVideos();
 }
-
 function initSupabase(url, key) {
-  // Supabase nuevo formato (sb_publishable_...) usa supabaseKey como está
-  // Formato viejo (eyJ...) también funciona igual
   sbClient = window.supabase.createClient(url, key);
 }
 
-// ── BOOT ──────────────────────────────────────────────
+// ── BOOT ─────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   const { url, key } = getConfig();
-  if (url && key) {
-    initSupabase(url, key);
-    loadVideos();
-  } else {
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('config-banner').style.display = 'block';
-  }
+  if (url && key) { initSupabase(url, key); loadVideos(); }
+  else { document.getElementById('loader').style.display='none'; document.getElementById('config-banner').style.display='block'; }
 });
 
-// ── LOAD VIDEOS ───────────────────────────────────────
+// ── YOUTUBE UTILS ─────────────────────────────────────
+function extractYTId(url) {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#\s]{11})/,
+    /youtube\.com\/shorts\/([^&?#\s]{11})/
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
+function ytThumb(id) { return `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }
+function ytEmbed(id) { return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`; }
+
+function onUrlInput(val) {
+  const id = extractYTId(val.trim());
+  const preview = document.getElementById('yt-preview');
+  const iframe  = document.getElementById('preview-iframe');
+  const info    = document.getElementById('preview-info');
+  if (id) {
+    iframe.src = ytEmbed(id);
+    info.textContent = `ID detectado: ${id}`;
+    preview.style.display = 'block';
+  } else {
+    iframe.src = '';
+    preview.style.display = 'none';
+  }
+}
+
+// ── LOAD ─────────────────────────────────────────────
 async function loadVideos() {
   document.getElementById('loader').style.display = 'block';
   try {
-    const { data, error } = await sbClient
-      .from(TABLE)
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await sbClient.from(TABLE).select('*').order('created_at', { ascending: false });
     if (error) throw error;
     allVideos = data || [];
     renderGrid(allVideos);
@@ -430,17 +359,12 @@ async function loadVideos() {
   }
 }
 
-// ── RENDER GRID ───────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────
 function renderGrid(videos) {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
   if (!videos.length) {
-    grid.innerHTML = `
-      <div id="empty">
-        <div class="empty-icon">📭</div>
-        <h3>No hay videos aún</h3>
-        <p>¡Sé el primero en subir uno!</p>
-      </div>`;
+    grid.innerHTML = `<div id="empty"><div class="empty-icon">📭</div><h3>No hay videos aún</h3><p>¡Sé el primero en agregar uno!</p></div>`;
     return;
   }
   videos.forEach(v => {
@@ -448,12 +372,10 @@ function renderGrid(videos) {
     card.className = 'card';
     card.onclick = () => openPlayer(v);
     const date = new Date(v.created_at).toLocaleDateString('es-DO', { day:'numeric', month:'short', year:'numeric' });
-    const thumb = v.thumb_url
-      ? `<img class="thumb" src="${v.thumb_url}" alt="${esc(v.title)}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
-      : '';
+    const thumb = v.thumb_url || '';
     card.innerHTML = `
-      ${thumb}
-      <div class="thumb-placeholder" ${v.thumb_url ? 'style="display:none"' : ''}>🎬</div>
+      ${thumb ? `<img class="thumb" src="${thumb}" alt="${esc(v.title)}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'">` : ''}
+      <div class="thumb-placeholder" ${thumb ? 'style="display:none"' : ''}>▶️</div>
       <div class="card-info">
         <div class="card-title">${esc(v.title)}</div>
         <div class="card-meta">${date}</div>
@@ -466,14 +388,10 @@ function renderGrid(videos) {
 function doSearch() {
   const q = document.getElementById('search-input').value.toLowerCase().trim();
   if (!q) { renderGrid(allVideos); return; }
-  renderGrid(allVideos.filter(v =>
-    v.title.toLowerCase().includes(q) ||
-    (v.description || '').toLowerCase().includes(q)
-  ));
+  renderGrid(allVideos.filter(v => v.title.toLowerCase().includes(q) || (v.description||'').toLowerCase().includes(q)));
 }
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.activeElement === document.getElementById('search-input'))
-    doSearch();
+  if (e.key === 'Enter' && document.activeElement === document.getElementById('search-input')) doSearch();
 });
 
 // ── UPLOAD ────────────────────────────────────────────
@@ -485,96 +403,47 @@ function closeUpload() {
   document.getElementById('upload-overlay').classList.remove('open');
 }
 
-function onFileChosen(input) {
-  const f = input.files[0];
-  document.getElementById('file-name').textContent = f ? `✔ ${f.name}` : '';
-}
+async function submitVideo() {
+  const rawUrl = document.getElementById('up-url').value.trim();
+  const title  = document.getElementById('up-title').value.trim();
+  const desc   = document.getElementById('up-desc').value.trim();
+  const ytId   = extractYTId(rawUrl);
 
-const dz = document.getElementById('drop-zone');
-dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('drag');
-  const f = e.dataTransfer.files[0];
-  if (f && f.type.startsWith('video/')) {
-    const dt = new DataTransfer(); dt.items.add(f);
-    document.getElementById('video-file').files = dt.files;
-    document.getElementById('file-name').textContent = `✔ ${f.name}`;
-  }
-});
-
-async function uploadVideo() {
-  const title = document.getElementById('up-title').value.trim();
-  const desc  = document.getElementById('up-desc').value.trim();
-  const thumb = document.getElementById('up-thumb').value.trim();
-  const file  = document.getElementById('video-file').files[0];
-
+  if (!ytId)  { toast('Link de YouTube inválido', true); return; }
   if (!title) { toast('El título es obligatorio', true); return; }
-  if (!file)  { toast('Selecciona un archivo de video', true); return; }
-  if (file.size > 500 * 1024 * 1024) { toast('El archivo supera los 500 MB', true); return; }
 
   const btn = document.getElementById('btn-submit');
-  btn.disabled = true; btn.textContent = 'Subiendo…';
-  const pw = document.getElementById('progress-wrap');
-  const pb = document.getElementById('progress-bar');
-  pw.style.display = 'block'; pb.style.width = '0%';
+  btn.disabled = true; btn.textContent = 'Publicando…';
 
   try {
-    // Simulate progress (Supabase JS v2 no tiene onUploadProgress nativo)
-    let fakeP = 0;
-    const tick = setInterval(() => {
-      fakeP = Math.min(fakeP + Math.random() * 8, 85);
-      pb.style.width = fakeP + '%';
-    }, 400);
-
-    const ext  = file.name.split('.').pop();
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-    const { error: storageErr } = await sbClient.storage
-      .from(BUCKET)
-      .upload(path, file, { contentType: file.type, upsert: false });
-
-    clearInterval(tick);
-    if (storageErr) throw storageErr;
-
-    pb.style.width = '92%';
-
-    const { data: urlData } = sbClient.storage.from(BUCKET).getPublicUrl(path);
-    const videoUrl = urlData.publicUrl;
-
-    const { error: dbErr } = await sbClient.from(TABLE).insert({
-      title, description: desc || null,
-      video_url: videoUrl,
-      thumb_url: thumb || null,
+    const { error } = await sbClient.from(TABLE).insert({
+      title,
+      description: desc || null,
+      video_url: `https://www.youtube.com/watch?v=${ytId}`,
+      thumb_url: ytThumb(ytId),
     });
-    if (dbErr) throw dbErr;
-
-    pb.style.width = '100%';
-    setTimeout(() => {
-      pw.style.display = 'none';
-      btn.disabled = false; btn.textContent = 'Publicar video';
-      closeUpload();
-      resetUploadForm();
-      toast('¡Video publicado! 🎉');
-      loadVideos();
-    }, 500);
-
+    if (error) throw error;
+    toast('¡Video publicado! 🎉');
+    closeUpload();
+    resetForm();
+    loadVideos();
   } catch(e) {
-    document.getElementById('progress-wrap').style.display = 'none';
+    toast('Error: ' + e.message, true);
+  } finally {
     btn.disabled = false; btn.textContent = 'Publicar video';
-    toast('Error al subir: ' + e.message, true);
   }
 }
 
-function resetUploadForm() {
-  ['up-title','up-desc','up-thumb'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('video-file').value = '';
-  document.getElementById('file-name').textContent = '';
+function resetForm() {
+  ['up-url','up-title','up-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('yt-preview').style.display = 'none';
+  document.getElementById('preview-iframe').src = '';
 }
 
 // ── PLAYER ────────────────────────────────────────────
 function openPlayer(v) {
-  document.getElementById('player-video').src = v.video_url;
+  const id = extractYTId(v.video_url);
+  document.getElementById('player-iframe').src = id ? ytEmbed(id) : '';
   document.getElementById('player-title').textContent = v.title;
   const date = new Date(v.created_at).toLocaleDateString('es-DO', { day:'numeric', month:'long', year:'numeric' });
   document.getElementById('player-meta').textContent = `Publicado el ${date}`;
@@ -583,15 +452,12 @@ function openPlayer(v) {
 }
 function closePlayer(e) {
   if (e && e.target !== document.getElementById('player-overlay')) return;
-  document.getElementById('player-video').pause();
-  document.getElementById('player-video').src = '';
+  document.getElementById('player-iframe').src = '';
   document.getElementById('player-overlay').classList.remove('open');
 }
+
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeUpload();
-    closePlayer();
-  }
+  if (e.key === 'Escape') { closeUpload(); closePlayer(); }
 });
 
 // ── TOAST ─────────────────────────────────────────────
@@ -603,11 +469,8 @@ function toast(msg, isError=false) {
   t._timer = setTimeout(() => t.className = '', 3200);
 }
 
-// ── UTILS ─────────────────────────────────────────────
 function esc(s) {
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
 </body>
