@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -8,48 +8,76 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <style>
-  /* ── ESTILO WIKIPEDIA CLÁSICO (Vector Skin) ── */
-  :root {
+  /* ── VARIABLES DE COLOR (SOPORTE DE TEMAS) ── */
+  :root, html[data-theme="light"] {
     --bg-body: #f6f6f6;
     --bg-content: #ffffff;
     --border-color: #a2a9b1;
     --link-color: #0645ad;
     --link-hover: #0b0080;
     --text-main: #202122;
+    --text-muted: #54595d;
+    --bg-toolbar: #eaecf0;
+    --bg-comment: #f8f9fa;
+    --input-bg: #ffffff;
     --font-sans: Arial, 'Helvetica Neue', Helvetica, sans-serif;
     --font-serif: 'Linux Libertine', Georgia, Times, serif;
   }
+  html[data-theme="dark"] {
+    --bg-body: #101419;
+    --bg-content: #1a1f26;
+    --border-color: #3a4454;
+    --link-color: #6cb6ff;
+    --link-hover: #9fcdff;
+    --text-main: #eaecf0;
+    --text-muted: #9aa0a8;
+    --bg-toolbar: #242b35;
+    --bg-comment: #202630;
+    --input-bg: #11151c;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg-body); color: var(--text-main); font-family: var(--font-sans); font-size: 14px; display: flex; min-height: 100vh; }
+  body { background: var(--bg-body); color: var(--text-main); font-family: var(--font-sans); font-size: 14px; display: flex; min-height: 100vh; transition: background 0.2s, color 0.2s; }
   a { color: var(--link-color); text-decoration: none; cursor: pointer; }
   a:hover { text-decoration: underline; }
 
-  /* Barra lateral */
-  #mw-panel { width: 11em; position: fixed; top: 0; left: 0; padding: 1.5em; height: 100vh; overflow-y: auto; }
+  /* ── BARRA LATERAL (ESCRITORIO Y MÓVIL) ── */
+  #mw-panel { width: 11em; position: fixed; top: 0; left: 0; padding: 1.5em; height: 100vh; overflow-y: auto; background: var(--bg-body); z-index: 200; transition: transform 0.3s ease; }
   .mw-logo { display: block; text-align: center; margin-bottom: 2em; text-decoration: none !important; }
   .mw-logo-icon { font-size: 35px; }
-  .mw-logo-wordmark { font-family: var(--font-serif); font-size: 1.4em; color: black; display: block; margin-top: 5px; }
-  .mw-logo-tagline { font-size: 0.72em; color: #54595d; display: block; }
+  .mw-logo-wordmark { font-family: var(--font-serif); font-size: 1.4em; color: var(--text-main); display: block; margin-top: 5px; }
+  .mw-logo-tagline { font-size: 0.72em; color: var(--text-muted); display: block; }
   .portal { margin-bottom: 1.5em; }
-  .portal h3 { font-size: 0.75em; color: #54595d; margin-bottom: 0.5em; text-transform: uppercase; border-bottom: 1px solid #c8ccd1; padding-bottom: 3px; font-weight: normal; }
+  .portal h3 { font-size: 0.75em; color: var(--text-muted); margin-bottom: 0.5em; text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 3px; font-weight: normal; }
   .portal ul { list-style: none; }
   .portal li { font-size: 0.85em; margin-bottom: 0.5em; }
 
-  /* Contenedor principal */
-  #content-wrapper { margin-left: 11em; flex: 1; display: flex; flex-direction: column; }
+  /* Capa oscura de fondo al abrir menú en móvil */
+  #sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 150; }
+
+  /* ── CONTENEDOR PRINCIPAL ── */
+  #content-wrapper { margin-left: 11em; flex: 1; display: flex; flex-direction: column; min-width: 0; }
   
   /* Cabecera superior */
-  #mw-head { height: 3.5em; display: flex; justify-content: flex-end; align-items: flex-end; padding: 0 1.5em; position: relative; z-index: 10; }
-  .search-box { display: flex; align-items: center; background: white; border: 1px solid #a2a9b1; border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
-  .search-box input { border: none; padding: 6px 10px; font-size: 0.9em; outline: none; width: 220px; }
-  .search-box button { background: none; border: none; padding: 6px 10px; cursor: pointer; font-size: 1em; }
+  #mw-head { height: 3.5em; display: flex; justify-content: space-between; align-items: center; padding: 0 1.5em; position: relative; z-index: 10; gap: 10px; }
+  .menu-toggle-btn { display: none; background: none; border: 1px solid var(--border-color); color: var(--text-main); padding: 5px 10px; cursor: pointer; border-radius: 2px; font-size: 1.1em; }
+  .head-actions { display: flex; align-items: center; gap: 10px; }
+  
+  /* Botón de tema */
+  .theme-btn { background: none; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; cursor: pointer; border-radius: 2px; font-size: 0.85em; display: flex; align-items: center; gap: 4px; }
+  .theme-btn:hover { background: var(--bg-toolbar); }
+
+  /* Barra de búsqueda */
+  .search-box { display: flex; align-items: center; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 2px; overflow: hidden; }
+  .search-box input { background: transparent; border: none; padding: 6px 10px; font-size: 0.9em; outline: none; width: 200px; color: var(--text-main); }
+  .search-box button { background: none; border: none; padding: 6px 10px; cursor: pointer; font-size: 1em; color: var(--text-main); }
   
   /* Área blanca de Wikipedia */
-  #content { background: var(--bg-content); border-left: 1px solid var(--border-color); border-top: 1px solid var(--border-color); flex: 1; padding: 1.5em 2em; position: relative; }
+  #content { background: var(--bg-content); border-left: 1px solid var(--border-color); border-top: 1px solid var(--border-color); flex: 1; padding: 1.5em 2em; position: relative; display: flex; flex-direction: column; }
   
-  /* Pestañas de Navegación interna */
+  /* Pestañas de Wikipedia */
   #p-namespaces { position: absolute; top: -36px; left: 0; display: flex; gap: 2px; }
-  .tab { background: #f6f6f6; border: 1px solid transparent; border-bottom: none; padding: 8px 14px; font-size: 0.85em; cursor: pointer; color: var(--link-color); border-radius: 2px 2px 0 0; }
+  .tab { background: var(--bg-body); border: 1px solid transparent; border-bottom: none; padding: 8px 14px; font-size: 0.85em; cursor: pointer; color: var(--link-color); border-radius: 2px 2px 0 0; transition: background 0.2s; }
   .tab:hover { text-decoration: underline; }
   .tab.selected { background: var(--bg-content); border-color: var(--border-color); border-bottom: 1px solid var(--bg-content); color: var(--text-main); font-weight: bold; position: relative; z-index: 2; top: 1px; }
 
@@ -58,53 +86,75 @@
   .view-section.active { display: block; }
 
   /* Títulos */
-  .firstHeading { font-family: var(--font-serif); font-weight: normal; font-size: 1.85em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25em; margin-bottom: 0.25em; }
-  #siteSub { font-size: 0.8em; color: #54595d; margin-bottom: 1.5em; }
+  .firstHeading { font-family: var(--font-serif); font-weight: normal; font-size: 1.85em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25em; margin-bottom: 0.25em; color: var(--text-main); }
+  #siteSub { font-size: 0.8em; color: var(--text-muted); margin-bottom: 1.5em; }
   
-  /* Renderizado del WikiText (Markdown) */
-  .mw-parser-output { font-size: 1em; line-height: 1.6; }
+  /* Renderizado de Artículos */
+  .mw-parser-output { font-size: 1em; line-height: 1.6; word-wrap: break-word; }
   .mw-parser-output h2 { font-family: var(--font-serif); font-weight: normal; font-size: 1.5em; border-bottom: 1px solid var(--border-color); margin: 1.2em 0 0.4em; padding-bottom: 0.25em; }
   .mw-parser-output h3 { font-family: var(--font-sans); font-weight: bold; font-size: 1.15em; margin: 1em 0 0.4em; }
   .mw-parser-output p { margin-bottom: 0.8em; text-align: justify; }
   .mw-parser-output ul, .mw-parser-output ol { margin: 0.4em 0 1em 2em; }
-  .mw-parser-output img { max-width: 320px; height: auto; border: 1px solid #c8ccd1; padding: 3px; background: #fff; float: right; margin: 0 0 1em 1em; }
+  .mw-parser-output img { max-width: 320px; height: auto; border: 1px solid var(--border-color); padding: 3px; background: var(--bg-content); float: right; margin: 0 0 1em 1em; }
   
-  /* Editor de Texto */
-  .editor-toolbar { background: #eaecf0; border: 1px solid var(--border-color); border-bottom: none; padding: 6px; display: flex; gap: 5px; align-items: center; }
-  .tool-btn { background: #fff; border: 1px solid #c8ccd1; padding: 4px 10px; cursor: pointer; border-radius: 2px; font-size: 0.85em; }
-  .tool-btn:hover { background: #f6f6f6; }
-  .editor-area textarea { width: 100%; min-height: 380px; border: 1px solid var(--border-color); padding: 12px; font-family: monospace; font-size: 13px; resize: vertical; outline: none; line-height: 1.5; }
-  .editor-actions { margin-top: 15px; display: flex; gap: 12px; align-items: center; }
+  /* Editor */
+  .editor-toolbar { background: var(--bg-toolbar); border: 1px solid var(--border-color); border-bottom: none; padding: 6px; display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .tool-btn { background: var(--bg-content); color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 10px; cursor: pointer; border-radius: 2px; font-size: 0.85em; }
+  .tool-btn:hover { background: var(--bg-body); }
+  .editor-area textarea { width: 100%; min-height: 380px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); padding: 12px; font-family: monospace; font-size: 13px; resize: vertical; outline: none; line-height: 1.5; }
+  .editor-actions { margin-top: 15px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   .btn-save { background: #3675df; color: white; border: 1px solid #2a62c5; padding: 7px 16px; font-weight: bold; cursor: pointer; border-radius: 2px; font-size: 0.85em; }
   .btn-save:hover { background: #2a62c5; }
+  #ed-title { background: var(--input-bg); color: var(--text-main); }
   
-  /* Sistema de Discusión (Comentarios) */
-  .comment-box { border: 1px solid #c8ccd1; background: #f8f9fa; padding: 12px; margin-bottom: 12px; border-left: 3px solid #a2a9b1; }
-  .comment-meta { font-size: 0.8em; color: #54595d; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  /* Comentarios (Discusión) */
+  .comment-box { border: 1px solid var(--border-color); background: var(--bg-comment); padding: 12px; margin-bottom: 12px; border-left: 3px solid var(--border-color); }
+  .comment-meta { font-size: 0.8em; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
   .comment-body { font-size: 0.95em; white-space: pre-wrap; }
   .comment-form { border-top: 1px solid var(--border-color); margin-top: 25px; padding-top: 15px; }
-  .comment-form input, .comment-form textarea { width: 100%; max-width: 600px; padding: 8px; margin-bottom: 10px; border: 1px solid #c8ccd1; display: block; font-family: inherit; font-size: 0.9em; }
-  .comment-form textarea { resize: vertical; }
-
-  /* Lista de artículos */
+  .comment-form input, .comment-form textarea { width: 100%; max-width: 600px; padding: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); display: block; font-family: inherit; font-size: 0.9em; }
+  
   .page-list-ul { list-style: square; margin-left: 20px; line-height: 1.8; }
 
-  /* Banner de Conexión a Base de Datos (Solo desarrollo) */
-  #config-banner { background: #f8f9fa; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 20px; border-radius: 2px; }
-  #config-banner p { font-size: 0.85em; margin-bottom: 8px; color: #54595d; }
-  #config-banner input { padding: 6px; width: 260px; margin-right: 6px; border: 1px solid #a2a9b1; font-size: 0.85em; }
-
-  /* Notificaciones y carga */
+  /* Banners y Utilidades */
+  #config-banner { background: var(--bg-comment); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 20px; border-radius: 2px; }
+  #config-banner p { font-size: 0.85em; margin-bottom: 8px; color: var(--text-muted); }
+  #config-banner input { padding: 6px; width: 100%; max-width: 260px; margin-bottom: 8px; margin-right: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-size: 0.85em; }
   #toast { position: fixed; bottom: 20px; right: 20px; background: #202122; color: #fff; padding: 10px 18px; border-radius: 2px; opacity: 0; transition: opacity 0.3s; z-index: 1000; font-size: 0.85em; }
   .spinner { border: 2px solid #f3f3f3; border-top: 2px solid var(--link-color); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   #loader { display: none; margin: 20px auto; width: 30px; height: 30px; border-width: 3px; }
+
+  /* ── ADAPTACIÓN EXCLUSIVA PARA MÓVILES (RESPONSIVE) ── */
+  @media (max-width: 768px) {
+    #mw-panel { transform: translateX(-100%); width: 12em; }
+    #mw-panel.open { transform: translateX(0); }
+    #sidebar-overlay.active { display: block; }
+    
+    #content-wrapper { margin-left: 0; }
+    .menu-toggle-btn { display: block; }
+    .search-box input { width: 110px; font-size: 0.85em; padding: 6px 6px; }
+    
+    #content { padding: 1em; border-left: none; }
+    
+    /* Reposicionar pestañas en móvil para que parezcan un submenú superior continuo */
+    #p-namespaces { position: static; width: 100%; display: flex; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+    .tab { flex: 1; text-align: center; font-size: 0.8em; padding: 10px 5px; border-radius: 0; }
+    .tab.selected { border-color: var(--border-color); border-bottom: 1px solid var(--bg-content); top: 1px; }
+
+    /* Forzar que las imágenes subidas no rompan la lectura flotando lateralmente */
+    .mw-parser-output img { float: none; display: block; max-width: 100%; margin: 1em auto; }
+    .editor-actions { flex-direction: column; align-items: stretch; }
+    .editor-actions button, .editor-actions a { text-align: center; width: 100%; }
+  }
 </style>
 </head>
 <body>
 
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
 <div id="mw-panel">
-  <a href="#" onclick="showHome()" class="mw-logo">
+  <a href="#" onclick="showHome(); toggleSidebar(false);" class="mw-logo">
     <div class="mw-logo-icon">🌐</div>
     <span class="mw-logo-wordmark">Wikilibre</span>
     <span class="mw-logo-tagline">La enciclopedia libre</span>
@@ -113,16 +163,16 @@
   <div class="portal">
     <h3>Navegación</h3>
     <ul>
-      <li><a href="#" onclick="showHome()">Portada</a></li>
-      <li><a href="#" onclick="openRandom()">Página aleatoria</a></li>
-      <li><a href="#" onclick="startNewPage()"><b>+ Crear artículo</b></a></li>
+      <li><a href="#" onclick="showHome(); toggleSidebar(false);">Portada</a></li>
+      <li><a href="#" onclick="openRandom(); toggleSidebar(false);">Página aleatoria</a></li>
+      <li><a href="#" onclick="startNewPage(); toggleSidebar(false);"><b>+ Crear artículo</b></a></li>
     </ul>
   </div>
 
   <div class="portal">
     <h3>Colaborar</h3>
     <ul>
-      <li><a href="#" onclick="startNewPage()">Añadir página</a></li>
+      <li><a href="#" onclick="startNewPage(); toggleSidebar(false);">Añadir página</a></li>
       <li><a href="https://supabase.com" target="_blank">Panel de Supabase</a></li>
     </ul>
   </div>
@@ -130,9 +180,15 @@
 
 <div id="content-wrapper">
   <div id="mw-head">
-    <div class="search-box">
-      <input id="search-input" type="text" placeholder="Buscar en Wikilibre" onkeydown="if(event.key==='Enter') doSearch()" />
-      <button onclick="doSearch()">🔍</button>
+    <button class="menu-toggle-btn" onclick="toggleSidebar()">☰ Menú</button>
+    
+    <div class="head-actions">
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙 Modo Oscuro</button>
+      
+      <div class="search-box">
+        <input id="search-input" type="text" placeholder="Buscar..." onkeydown="if(event.key==='Enter') doSearch()" />
+        <button onclick="doSearch()">🔍</button>
+      </div>
     </div>
   </div>
 
@@ -165,7 +221,7 @@
 
     <div id="view-read" class="view-section">
       <div id="article-body" class="mw-parser-output"></div>
-      <div style="margin-top: 30px; padding-top: 8px; border-top: 1px solid #eaecf0; font-size: 0.78em; color: #54595d;" id="article-meta"></div>
+      <div style="margin-top: 30px; padding-top: 8px; border-top: 1px solid var(--border-color); font-size: 0.78em; color: var(--text-muted);" id="article-meta"></div>
     </div>
 
     <div id="view-talk" class="view-section">
@@ -194,10 +250,10 @@
         <button class="tool-btn" onclick="insertFormat('## ', '')" title="Título de sección">Subtítulo</button>
         <button class="tool-btn" onclick="insertFormat('[Texto del enlace](', ')')" title="Vincular URL">🔗 Enlace</button>
         
-        <span style="border-left: 1px solid #c8ccd1; height: 18px; margin: 0 6px;"></span>
+        <span style="border-left: 1px solid var(--border-color); height: 18px; margin: 0 6px;"></span>
         
         <input type="file" id="img-upload-input" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" />
-        <button class="tool-btn" onclick="document.getElementById('img-upload-input').click()" style="background:#f8f9fa; font-weight:bold;">📷 Subir e Insertar Imagen</button>
+        <button class="tool-btn" onclick="document.getElementById('img-upload-input').click()" style="font-weight:bold;">📷 Subir e Insertar Imagen</button>
         <span id="uploading-indicator" style="display:none; font-size:0.8em; color:#3675df; margin-left:5px;"><span class="spinner"></span> Subiendo...</span>
       </div>
       
@@ -230,6 +286,11 @@ let allPages = [];
 let currentPage = null;
 
 window.addEventListener('DOMContentLoaded', () => {
+  // Inicializar Tema Guardado
+  const savedTheme = localStorage.getItem('wiki_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('theme-btn').textContent = savedTheme === 'dark' ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
+
   const url = localStorage.getItem(STORAGE_KEY_URL) || '';
   const key = localStorage.getItem(STORAGE_KEY_KEY) || '';
   if (url && key) { 
@@ -239,6 +300,26 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('config-banner').style.display = 'block'; 
   }
 });
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('wiki_theme', nextTheme);
+  document.getElementById('theme-btn').textContent = nextTheme === 'dark' ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
+}
+
+function toggleSidebar(force) {
+  const panel = document.getElementById('mw-panel');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (typeof force === 'boolean') {
+    if(force) { panel.classList.add('open'); overlay.classList.add('active'); }
+    else { panel.classList.remove('open'); overlay.classList.remove('active'); }
+  } else {
+    panel.classList.toggle('open');
+    overlay.classList.toggle('active');
+  }
+}
 
 function saveConfig() {
   const url = document.getElementById('cfg-url').value.trim();
@@ -259,7 +340,6 @@ function initSupabase(url, key) {
 // SISTEMA DE CAMBIO DE PESTAÑAS (TABS)
 // ==========================================
 function switchTab(tab) {
-  // Permitir ir a 'edit' siempre (para páginas nuevas), pero si es 'read' o 'talk' exige tener un artículo abierto
   if (tab !== 'home' && !currentPage && tab !== 'edit') {
     toast("Selecciona un artículo de la lista primero.");
     return;
@@ -267,7 +347,13 @@ function switchTab(tab) {
   
   document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('selected'));
-  document.getElementById('p-namespaces').style.display = (tab === 'home') ? 'none' : 'flex';
+  
+  // Ocultar bloque visual de pestañas sólo en portada si estamos en escritorio
+  if (window.innerWidth > 768) {
+    document.getElementById('p-namespaces').style.display = (tab === 'home') ? 'none' : 'flex';
+  } else {
+    document.getElementById('p-namespaces').style.display = (tab === 'home') ? 'none' : 'flex';
+  }
 
   if (tab === 'home') {
     document.getElementById('main-heading').textContent = "Portada";
@@ -352,7 +438,7 @@ function doSearch() {
   
   const filtered = allPages.filter(p => p.title.toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q));
   const list = document.getElementById('page-list');
-  list.innerHTML = filtered.length ? '' : '<i>No se encontraron coincidencias. Puedes pulsar "+ Crear artículo" en el menú de la izquierda para redactarlo.</i>';
+  list.innerHTML = filtered.length ? '' : '<i>No se encontraron coincidencias. Puedes pulsar "+ Crear artículo" para redactarlo.</i>';
   
   filtered.forEach(p => {
     const li = document.createElement('li');
@@ -367,7 +453,6 @@ function doSearch() {
 function openArticle(pageObj) {
   currentPage = pageObj;
   
-  // Convertir WikiText/Markdown a HTML Seguro
   const rawHtml = marked.parse(currentPage.content || '');
   const cleanHtml = DOMPurify.sanitize(rawHtml);
   
@@ -389,7 +474,6 @@ async function saveArticle() {
   
   try {
     if (currentPage) {
-      // Editar existente
       const { error } = await sbClient.from('wiki_pages')
         .update({ title, content, updated_at: new Date().toISOString() })
         .eq('id', currentPage.id);
@@ -399,7 +483,6 @@ async function saveArticle() {
       currentPage.updated_at = new Date().toISOString();
       toast("Cambios guardados con éxito.");
     } else {
-      // Crear nuevo de forma anónima
       const { data, error } = await sbClient.from('wiki_pages')
         .insert({ title, content, updated_at: new Date().toISOString() })
         .select();
@@ -462,14 +545,11 @@ async function handleImageUpload(e) {
     const ext = file.name.split('.').pop();
     const uniqueName = Date.now() + '_' + Math.random().toString(36).substring(7) + '.' + ext;
     
-    // Sube al bucket libre 'wiki-images'
     const { data, error } = await sbClient.storage.from('wiki-images').upload(uniqueName, file, { cacheControl: '3600', upsert: false });
     if (error) throw error;
 
-    // Obtener enlace directo
     const { data: { publicUrl } } = sbClient.storage.from('wiki-images').getPublicUrl(uniqueName);
     
-    // Introduce la sintaxis de imagen directamente en la posición del cursor del editor
     insertFormat('\n!(' + publicUrl + ')\n', '');
     toast("Imagen subida con éxito e insertada.");
 
@@ -498,7 +578,7 @@ async function loadComments() {
     
     list.innerHTML = '';
     if (data.length === 0) {
-      list.innerHTML = '<p style="color:#54595d; font-style:italic; font-size:0.9em;">Aún no hay notas ni discusiones sobre este artículo. Puedes escribir la primera abajo.</p>';
+      list.innerHTML = '<p style="color:var(--text-muted); font-style:italic; font-size:0.9em;">Aún no hay notas ni discusiones sobre este artículo. Puedes escribir la primera abajo.</p>';
     } else {
       data.forEach(c => {
         const date = new Date(c.created_at).toLocaleString('es-ES');
@@ -559,6 +639,7 @@ function toast(msg) {
   setTimeout(() => t.style.opacity = '0', 3500);
 }
 
+// Ocultar panel de carga
 function showLoader(show) {
   document.getElementById('loader').style.display = show ? 'block' : 'none';
 }
