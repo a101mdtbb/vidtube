@@ -8,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <style>
-  /* ── ESTILO TIPO WIKIPEDIA (Vector Skin Clone) ── */
+  /* ── ESTILO WIKIPEDIA CLÁSICO (Vector Skin) ── */
   :root {
     --bg-body: #f6f6f6;
     --bg-content: #ffffff;
@@ -16,41 +16,40 @@
     --link-color: #0645ad;
     --link-hover: #0b0080;
     --text-main: #202122;
-    --font-sans: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
-    --font-serif: 'Linux Libertine', 'Georgia', 'Times', serif;
+    --font-sans: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    --font-serif: 'Linux Libertine', Georgia, Times, serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg-body); color: var(--text-main); font-family: var(--font-sans); font-size: 14px; display: flex; min-height: 100vh; }
   a { color: var(--link-color); text-decoration: none; cursor: pointer; }
   a:hover { text-decoration: underline; }
 
-  /* Barra lateral izquierda */
+  /* Barra lateral */
   #mw-panel { width: 11em; position: fixed; top: 0; left: 0; padding: 1.5em; height: 100vh; overflow-y: auto; }
   .mw-logo { display: block; text-align: center; margin-bottom: 2em; text-decoration: none !important; }
-  .mw-logo-icon { font-size: 40px; }
-  .mw-logo-wordmark { font-family: var(--font-serif); font-size: 1.5em; color: black; display: block; margin-top: 5px; }
-  .mw-logo-tagline { font-size: 0.75em; color: #54595d; display: block; }
+  .mw-logo-icon { font-size: 35px; }
+  .mw-logo-wordmark { font-family: var(--font-serif); font-size: 1.4em; color: black; display: block; margin-top: 5px; }
+  .mw-logo-tagline { font-size: 0.72em; color: #54595d; display: block; }
   .portal { margin-bottom: 1.5em; }
   .portal h3 { font-size: 0.75em; color: #54595d; margin-bottom: 0.5em; text-transform: uppercase; border-bottom: 1px solid #c8ccd1; padding-bottom: 3px; font-weight: normal; }
   .portal ul { list-style: none; }
-  .portal li { font-size: 0.85em; margin-bottom: 0.4em; }
+  .portal li { font-size: 0.85em; margin-bottom: 0.5em; }
 
   /* Contenedor principal */
   #content-wrapper { margin-left: 11em; flex: 1; display: flex; flex-direction: column; }
   
-  /* Barra superior (Búsqueda y herramientas de usuario) */
+  /* Cabecera superior */
   #mw-head { height: 3.5em; display: flex; justify-content: flex-end; align-items: flex-end; padding: 0 1.5em; position: relative; z-index: 10; }
-  .search-box { display: flex; align-items: center; background: white; border: 1px solid #a2a9b1; border-radius: 2px; overflow: hidden; margin-right: 20px; margin-bottom: 5px;}
-  .search-box input { border: none; padding: 6px 10px; font-size: 0.9em; outline: none; width: 200px; }
-  .search-box button { background: none; border: none; padding: 6px 10px; cursor: pointer; font-size: 1em; color: var(--text-main); }
-  .user-tools { font-size: 0.75em; display: flex; gap: 15px; margin-bottom: 10px; }
+  .search-box { display: flex; align-items: center; background: white; border: 1px solid #a2a9b1; border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
+  .search-box input { border: none; padding: 6px 10px; font-size: 0.9em; outline: none; width: 220px; }
+  .search-box button { background: none; border: none; padding: 6px 10px; cursor: pointer; font-size: 1em; }
   
-  /* Área de contenido blanco */
+  /* Área blanca de Wikipedia */
   #content { background: var(--bg-content); border-left: 1px solid var(--border-color); border-top: 1px solid var(--border-color); flex: 1; padding: 1.5em 2em; position: relative; }
   
-  /* Pestañas (Artículo, Discusión, Editar, etc.) */
+  /* Pestañas de Navegación interna */
   #p-namespaces { position: absolute; top: -36px; left: 0; display: flex; gap: 2px; }
-  .tab { background: #f6f6f6; border: 1px solid transparent; border-bottom: none; padding: 8px 12px; font-size: 0.85em; cursor: pointer; color: var(--link-color); border-radius: 2px 2px 0 0; }
+  .tab { background: #f6f6f6; border: 1px solid transparent; border-bottom: none; padding: 8px 14px; font-size: 0.85em; cursor: pointer; color: var(--link-color); border-radius: 2px 2px 0 0; }
   .tab:hover { text-decoration: underline; }
   .tab.selected { background: var(--bg-content); border-color: var(--border-color); border-bottom: 1px solid var(--bg-content); color: var(--text-main); font-weight: bold; position: relative; z-index: 2; top: 1px; }
 
@@ -58,49 +57,48 @@
   .view-section { display: none; }
   .view-section.active { display: block; }
 
-  /* Tipografía de artículos */
-  .firstHeading { font-family: var(--font-serif); font-weight: normal; font-size: 2em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25em; margin-bottom: 0.25em; }
-  #siteSub { font-size: 0.85em; color: #54595d; margin-bottom: 1.5em; }
+  /* Títulos */
+  .firstHeading { font-family: var(--font-serif); font-weight: normal; font-size: 1.85em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25em; margin-bottom: 0.25em; }
+  #siteSub { font-size: 0.8em; color: #54595d; margin-bottom: 1.5em; }
   
-  /* Renderizado de Markdown para parecerse a Wiki */
-  .mw-parser-output { font-size: 1.05em; line-height: 1.6; }
-  .mw-parser-output h2 { font-family: var(--font-serif); font-weight: normal; font-size: 1.6em; border-bottom: 1px solid var(--border-color); margin: 1em 0 0.5em; padding-bottom: 0.2em; }
-  .mw-parser-output h3 { font-family: var(--font-serif); font-weight: bold; font-size: 1.2em; margin: 1em 0 0.5em; }
-  .mw-parser-output p { margin-bottom: 1em; }
-  .mw-parser-output ul, .mw-parser-output ol { margin: 0.3em 0 1em 2em; }
-  .mw-parser-output img { max-width: 100%; border: 1px solid #c8ccd1; padding: 3px; background: #fff; border-radius: 2px; }
+  /* Renderizado del WikiText (Markdown) */
+  .mw-parser-output { font-size: 1em; line-height: 1.6; }
+  .mw-parser-output h2 { font-family: var(--font-serif); font-weight: normal; font-size: 1.5em; border-bottom: 1px solid var(--border-color); margin: 1.2em 0 0.4em; padding-bottom: 0.25em; }
+  .mw-parser-output h3 { font-family: var(--font-sans); font-weight: bold; font-size: 1.15em; margin: 1em 0 0.4em; }
+  .mw-parser-output p { margin-bottom: 0.8em; text-align: justify; }
+  .mw-parser-output ul, .mw-parser-output ol { margin: 0.4em 0 1em 2em; }
+  .mw-parser-output img { max-width: 320px; height: auto; border: 1px solid #c8ccd1; padding: 3px; background: #fff; float: right; margin: 0 0 1em 1em; }
   
-  /* Editor */
-  .editor-toolbar { background: #eaecf0; border: 1px solid var(--border-color); border-bottom: none; padding: 6px; display: flex; gap: 5px; align-items: center; border-radius: 2px 2px 0 0; }
-  .tool-btn { background: #fff; border: 1px solid #c8ccd1; padding: 4px 8px; cursor: pointer; border-radius: 2px; font-size: 0.85em; color: var(--text-main); }
+  /* Editor de Texto */
+  .editor-toolbar { background: #eaecf0; border: 1px solid var(--border-color); border-bottom: none; padding: 6px; display: flex; gap: 5px; align-items: center; }
+  .tool-btn { background: #fff; border: 1px solid #c8ccd1; padding: 4px 10px; cursor: pointer; border-radius: 2px; font-size: 0.85em; }
   .tool-btn:hover { background: #f6f6f6; }
-  .editor-area textarea { width: 100%; min-height: 400px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 1em; resize: vertical; outline: none; }
-  .editor-area textarea:focus { border-color: var(--link-color); }
-  .editor-actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }
-  .btn-save { background: var(--link-color); color: white; border: none; padding: 8px 16px; font-weight: bold; cursor: pointer; border-radius: 2px; font-size: 0.9em; }
-  .btn-save:hover { background: var(--link-hover); }
+  .editor-area textarea { width: 100%; min-height: 380px; border: 1px solid var(--border-color); padding: 12px; font-family: monospace; font-size: 13px; resize: vertical; outline: none; line-height: 1.5; }
+  .editor-actions { margin-top: 15px; display: flex; gap: 12px; align-items: center; }
+  .btn-save { background: #3675df; color: white; border: 1px solid #2a62c5; padding: 7px 16px; font-weight: bold; cursor: pointer; border-radius: 2px; font-size: 0.85em; }
+  .btn-save:hover { background: #2a62c5; }
   
-  /* Comentarios (Discusión) */
-  .comment-box { border: 1px solid #c8ccd1; background: #f8f9fa; padding: 15px; margin-bottom: 15px; }
-  .comment-meta { font-size: 0.8em; color: #54595d; border-bottom: 1px solid #eaecf0; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between;}
-  .comment-body { font-size: 0.95em; line-height: 1.5; white-space: pre-wrap; }
-  .comment-form { border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 20px; }
-  .comment-form input, .comment-form textarea { width: 100%; max-width: 500px; padding: 8px; margin-bottom: 10px; border: 1px solid #c8ccd1; display: block; font-family: inherit; }
-  .delete-comment-btn { color: #d33; cursor: pointer; background: none; border: none; font-size: 0.9em; }
-  .delete-comment-btn:hover { text-decoration: underline; }
+  /* Sistema de Discusión (Comentarios) */
+  .comment-box { border: 1px solid #c8ccd1; background: #f8f9fa; padding: 12px; margin-bottom: 12px; border-left: 3px solid #a2a9b1; }
+  .comment-meta { font-size: 0.8em; color: #54595d; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .comment-body { font-size: 0.95em; white-space: pre-wrap; }
+  .comment-form { border-top: 1px solid var(--border-color); margin-top: 25px; padding-top: 15px; }
+  .comment-form input, .comment-form textarea { width: 100%; max-width: 600px; padding: 8px; margin-bottom: 10px; border: 1px solid #c8ccd1; display: block; font-family: inherit; font-size: 0.9em; }
+  .comment-form textarea { resize: vertical; }
 
-  /* Lista de páginas (Inicio) */
+  /* Lista de artículos */
   .page-list-ul { list-style: square; margin-left: 20px; line-height: 1.8; }
-  .page-list-ul li { font-size: 1.05em; }
 
-  /* Utilidades */
-  #config-banner { background: #fff3cd; border: 1px solid #ffe69c; padding: 15px; margin-bottom: 20px; color: #664d03; }
-  #config-banner input { padding: 5px; width: 250px; margin-right: 5px; }
-  #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 10px 20px; border-radius: 4px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
-  .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--link-color); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+  /* Banner de Conexión a Base de Datos (Solo desarrollo) */
+  #config-banner { background: #f8f9fa; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 20px; border-radius: 2px; }
+  #config-banner p { font-size: 0.85em; margin-bottom: 8px; color: #54595d; }
+  #config-banner input { padding: 6px; width: 260px; margin-right: 6px; border: 1px solid #a2a9b1; font-size: 0.85em; }
+
+  /* Notificaciones y carga */
+  #toast { position: fixed; bottom: 20px; right: 20px; background: #202122; color: #fff; padding: 10px 18px; border-radius: 2px; opacity: 0; transition: opacity 0.3s; z-index: 1000; font-size: 0.85em; }
+  .spinner { border: 2px solid #f3f3f3; border-top: 2px solid var(--link-color); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  #loader { display: none; margin: 20px auto; width: 40px; height: 40px; }
-
+  #loader { display: none; margin: 20px auto; width: 30px; height: 30px; border-width: 3px; }
 </style>
 </head>
 <body>
@@ -117,28 +115,21 @@
     <ul>
       <li><a href="#" onclick="showHome()">Portada</a></li>
       <li><a href="#" onclick="openRandom()">Página aleatoria</a></li>
-      <li><a href="#" onclick="startNewPage()">Crear artículo nuevo</a></li>
+      <li><a href="#" onclick="startNewPage()"><b>+ Crear artículo</b></a></li>
     </ul>
   </div>
 
   <div class="portal">
-    <h3>Herramientas</h3>
+    <h3>Colaborar</h3>
     <ul>
-      <li><a href="#">Cambios recientes</a></li>
-      <li><a href="#">Páginas especiales</a></li>
-      <li><a href="https://supabase.com" target="_blank">Panel de Base de Datos</a></li>
+      <li><a href="#" onclick="startNewPage()">Añadir página</a></li>
+      <li><a href="https://supabase.com" target="_blank">Panel de Supabase</a></li>
     </ul>
   </div>
 </div>
 
 <div id="content-wrapper">
   <div id="mw-head">
-    <div class="user-tools">
-      <span>👤 No has accedido</span>
-      <a href="#">Contribuciones</a>
-      <a href="#">Crear una cuenta</a>
-      <a href="#">Acceder</a>
-    </div>
     <div class="search-box">
       <input id="search-input" type="text" placeholder="Buscar en Wikilibre" onkeydown="if(event.key==='Enter') doSearch()" />
       <button onclick="doSearch()">🔍</button>
@@ -146,7 +137,6 @@
   </div>
 
   <div id="content">
-    
     <div id="p-namespaces">
       <div id="tab-read" class="tab selected" onclick="switchTab('read')">Artículo</div>
       <div id="tab-talk" class="tab" onclick="switchTab('talk')">Discusión</div>
@@ -154,10 +144,10 @@
     </div>
 
     <div id="config-banner" style="display:none">
-      <strong>⚙️ Faltan credenciales de Supabase.</strong>
-      <input id="cfg-url" type="text" placeholder="URL (https://xxxx.supabase.co)" />
-      <input id="cfg-key" type="text" placeholder="Anon Key" />
-      <button onclick="saveConfig()" class="btn-save">Conectar</button>
+      <p>⚠️ <b>Conexión requerida:</b> Introduce las credenciales de tu proyecto Supabase para poder leer y guardar artículos de forma libre.</p>
+      <input id="cfg-url" type="text" placeholder="URL del proyecto (https://...)" />
+      <input id="cfg-key" type="text" placeholder="Anon / Public Key" />
+      <button onclick="saveConfig()" class="btn-save">Conectar base de datos</button>
     </div>
 
     <h1 id="main-heading" class="firstHeading">Portada</h1>
@@ -167,63 +157,60 @@
 
     <div id="view-home" class="view-section active">
       <div class="mw-parser-output">
-        <p><b>Bienvenidos a Wikilibre</b>, un proyecto de enciclopedia libre que cualquiera puede editar. Actualmente tenemos <b id="page-count">0</b> artículos en español.</p>
-        <h2>Índice de artículos</h2>
+        <p>Bienvenido a <b>Wikilibre</b>, el proyecto de enciclopedia abierta donde cualquier persona puede leer, crear y editar artículos de forma instantánea sin necesidad de registrarse ni iniciar sesión.</p>
+        <h2>Todos los artículos (<span id="page-count">0</span>)</h2>
         <ul id="page-list" class="page-list-ul"></ul>
       </div>
     </div>
 
     <div id="view-read" class="view-section">
       <div id="article-body" class="mw-parser-output"></div>
-      <br>
-      <hr style="border: 0; border-top: 1px solid #eaecf0;">
-      <p style="font-size: 0.8em; color: #54595d; margin-top: 10px;" id="article-meta"></p>
+      <div style="margin-top: 30px; padding-top: 8px; border-top: 1px solid #eaecf0; font-size: 0.78em; color: #54595d;" id="article-meta"></div>
     </div>
 
     <div id="view-talk" class="view-section">
       <div class="mw-parser-output">
-        <p>Esta es la página de discusión para mejorar el artículo <b><span id="talk-title"></span></b>. Deje aquí sus comentarios y sugerencias.</p>
+        <p>Espacio libre para debatir y mejorar el contenido de este artículo.</p><br>
         <div id="comments-list"></div>
         
         <div class="comment-form">
-          <h3>Añadir un nuevo comentario</h3>
-          <input type="text" id="comment-author" placeholder="Tu nombre o seudónimo" />
-          <textarea id="comment-body" rows="4" placeholder="Escribe tu mensaje aquí..."></textarea>
-          <button class="btn-save" onclick="submitComment()">Publicar comentario</button>
+          <h3>Añadir a la discusión</h3>
+          <input type="text" id="comment-author" placeholder="Tu firma o seudónimo (Ej: Anon)" value="Anónimo" />
+          <textarea id="comment-body" rows="4" placeholder="Escribe tus sugerencias o correcciones..."></textarea>
+          <button class="btn-save" onclick="submitComment()">Publicar en la discusión</button>
         </div>
       </div>
     </div>
 
     <div id="view-edit" class="view-section">
-      <div style="margin-bottom: 10px;">
-        <label><b>Título del artículo:</b></label>
-        <input type="text" id="ed-title" style="width:100%; padding:8px; font-size:1.2em; border: 1px solid var(--border-color); margin-top: 5px;" />
+      <div style="margin-bottom: 15px;">
+        <label style="display:block; margin-bottom:4px; font-weight:bold;">Título de la página:</label>
+        <input type="text" id="ed-title" style="width:100%; padding:8px; font-size:1.15em; border: 1px solid var(--border-color);" placeholder="Escribe el nombre del artículo..." />
       </div>
       
       <div class="editor-toolbar">
-        <button class="tool-btn" onclick="insertFormat('**', '**')" title="Negrita"><b>N</b></button>
-        <button class="tool-btn" onclick="insertFormat('*', '*')" title="Cursiva"><i>C</i></button>
-        <button class="tool-btn" onclick="insertFormat('## ', '')" title="Título">Tít</button>
-        <button class="tool-btn" onclick="insertFormat('[', '](https://)')" title="Enlace">🔗</button>
+        <button class="tool-btn" onclick="insertFormat('**', '**')" title="Negrita"><b>B</b></button>
+        <button class="tool-btn" onclick="insertFormat('*', '*')" title="Cursiva"><i>I</i></button>
+        <button class="tool-btn" onclick="insertFormat('## ', '')" title="Título de sección">Subtítulo</button>
+        <button class="tool-btn" onclick="insertFormat('[Texto del enlace](', ')')" title="Vincular URL">🔗 Enlace</button>
         
-        <span style="border-left: 1px solid #c8ccd1; height: 20px; margin: 0 5px;"></span>
+        <span style="border-left: 1px solid #c8ccd1; height: 18px; margin: 0 6px;"></span>
         
         <input type="file" id="img-upload-input" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" />
-        <button class="tool-btn" onclick="document.getElementById('img-upload-input').click()" title="Subir Imagen al Servidor">📷 Insertar Imagen</button>
-        <span id="uploading-indicator" style="display:none; font-size:0.8em; color:var(--link-color);">Subiendo...</span>
+        <button class="tool-btn" onclick="document.getElementById('img-upload-input').click()" style="background:#f8f9fa; font-weight:bold;">📷 Subir e Insertar Imagen</button>
+        <span id="uploading-indicator" style="display:none; font-size:0.8em; color:#3675df; margin-left:5px;"><span class="spinner"></span> Subiendo...</span>
       </div>
       
       <div class="editor-area">
-        <textarea id="ed-body" placeholder="Comienza a escribir el artículo usando formato Markdown..."></textarea>
+        <textarea id="ed-body" placeholder="Escribe el cuerpo del artículo. Puedes usar formato Markdown o pulsar los botones de arriba para dar formato e insertar imágenes subidas al instante..."></textarea>
       </div>
       
       <div class="editor-actions">
-        <button class="btn-save" id="btn-save" onclick="saveArticle()">Publicar cambios</button>
-        <a href="#" onclick="cancelEdit()" style="color: #d33;">Cancelar</a>
+        <button class="btn-save" id="btn-save" onclick="saveArticle()">Publicar página</button>
+        <a href="#" onclick="cancelEdit()" style="color: #d33; margin-left: 10px; font-size: 0.9em;">Cancelar</a>
         
-        <button onclick="deleteArticle()" style="margin-left:auto; background:none; border:1px solid #d33; color:#d33; padding:5px 10px; cursor:pointer;" id="btn-delete">Eliminar artículo</button>
+        <button onclick="deleteArticle()" style="margin-left:auto; background:none; border:1px solid #d33; color:#d33; padding:6px 12px; cursor:pointer; font-size:0.85em;" id="btn-delete">Eliminar esta página</button>
       </div>
-      <p style="font-size:0.8em; color:#54595d; margin-top:10px;">Al guardar los cambios, aceptas que tus contribuciones sean publicadas libremente.</p>
     </div>
 
   </div>
@@ -233,7 +220,7 @@
 
 <script>
 // ==========================================
-// CONFIGURACIÓN DE SUPABASE
+// CONTROLADOR LOGICIAL Y CONEXIÓN SUPABASE
 // ==========================================
 const STORAGE_KEY_URL = 'vt_supabase_url';
 const STORAGE_KEY_KEY = 'vt_supabase_key';
@@ -241,7 +228,6 @@ const STORAGE_KEY_KEY = 'vt_supabase_key';
 let sbClient = null;
 let allPages = [];
 let currentPage = null;
-let currentTab = 'home'; // 'home', 'read', 'talk', 'edit'
 
 window.addEventListener('DOMContentLoaded', () => {
   const url = localStorage.getItem(STORAGE_KEY_URL) || '';
@@ -257,7 +243,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function saveConfig() {
   const url = document.getElementById('cfg-url').value.trim();
   const key = document.getElementById('cfg-key').value.trim();
-  if (!url || !key) return alert('Completa ambos campos');
+  if (!url || !key) return alert('Por favor, introduce ambos parámetros técnicos.');
   localStorage.setItem(STORAGE_KEY_URL, url);
   localStorage.setItem(STORAGE_KEY_KEY, key);
   document.getElementById('config-banner').style.display = 'none';
@@ -270,17 +256,18 @@ function initSupabase(url, key) {
 }
 
 // ==========================================
-// NAVEGACIÓN Y PESTAÑAS
+// SISTEMA DE CAMBIO DE PESTAÑAS (TABS)
 // ==========================================
 function switchTab(tab) {
-  if (tab !== 'home' && !currentPage && tab !== 'edit') return;
+  // Permitir ir a 'edit' siempre (para páginas nuevas), pero si es 'read' o 'talk' exige tener un artículo abierto
+  if (tab !== 'home' && !currentPage && tab !== 'edit') {
+    toast("Selecciona un artículo de la lista primero.");
+    return;
+  }
   
-  // Esconder todo
   document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('selected'));
   document.getElementById('p-namespaces').style.display = (tab === 'home') ? 'none' : 'flex';
-
-  currentTab = tab;
 
   if (tab === 'home') {
     document.getElementById('main-heading').textContent = "Portada";
@@ -295,16 +282,14 @@ function switchTab(tab) {
   else if (tab === 'talk') {
     document.getElementById('tab-talk').classList.add('selected');
     document.getElementById('main-heading').textContent = "Discusión: " + currentPage.title;
-    document.getElementById('talk-title').textContent = currentPage.title;
     document.getElementById('view-talk').classList.add('active');
     loadComments();
   } 
   else if (tab === 'edit') {
     document.getElementById('tab-edit').classList.add('selected');
-    document.getElementById('main-heading').textContent = currentPage ? "Editando " + currentPage.title : "Creando artículo nuevo";
+    document.getElementById('main-heading').textContent = currentPage ? "Editando: " + currentPage.title : "Crear artículo nuevo";
     document.getElementById('view-edit').classList.add('active');
     
-    // Preparar el editor
     document.getElementById('ed-title').value = currentPage ? currentPage.title : '';
     document.getElementById('ed-body').value = currentPage ? (currentPage.content || '') : '';
     document.getElementById('btn-delete').style.display = currentPage ? 'block' : 'none';
@@ -317,18 +302,19 @@ function showHome() {
 }
 
 function startNewPage() {
+  if (!sbClient) return toast("Configura las credenciales de Supabase primero.");
   currentPage = null;
   switchTab('edit');
 }
 
 function openRandom() {
-  if (allPages.length === 0) return toast("No hay artículos aún");
+  if (allPages.length === 0) return toast("No hay artículos almacenados.");
   const randomPage = allPages[Math.floor(Math.random() * allPages.length)];
   openArticle(randomPage);
 }
 
 // ==========================================
-// GESTIÓN DE ARTÍCULOS
+// OPERACIONES CRUD DE LOS ARTÍCULOS
 // ==========================================
 async function loadAllPages() {
   if(!sbClient) return;
@@ -360,14 +346,13 @@ function doSearch() {
   
   currentPage = null;
   document.getElementById('p-namespaces').style.display = 'none';
-  document.getElementById('main-heading').textContent = "Resultados de búsqueda: " + q;
+  document.getElementById('main-heading').textContent = "Resultados de búsqueda para: " + q;
   document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
   document.getElementById('view-home').classList.add('active');
   
   const filtered = allPages.filter(p => p.title.toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q));
-  
   const list = document.getElementById('page-list');
-  list.innerHTML = filtered.length ? '' : '<i>No se encontraron resultados. <a href="#" onclick="startNewPage()">Puedes crear esta página.</a></i>';
+  list.innerHTML = filtered.length ? '' : '<i>No se encontraron coincidencias. Puedes pulsar "+ Crear artículo" en el menú de la izquierda para redactarlo.</i>';
   
   filtered.forEach(p => {
     const li = document.createElement('li');
@@ -382,14 +367,14 @@ function doSearch() {
 function openArticle(pageObj) {
   currentPage = pageObj;
   
-  // Usar marked para convertir markdown a HTML y DOMPurify para sanitizar por seguridad
+  // Convertir WikiText/Markdown a HTML Seguro
   const rawHtml = marked.parse(currentPage.content || '');
   const cleanHtml = DOMPurify.sanitize(rawHtml);
   
   document.getElementById('article-body').innerHTML = cleanHtml;
   
   const date = new Date(currentPage.updated_at).toLocaleString('es-ES');
-  document.getElementById('article-meta').textContent = `Esta página se editó por última vez el ${date}.`;
+  document.getElementById('article-meta').textContent = `Esta página fue modificada por última vez el ${date}. Contenido bajo dominio libre.`;
   
   switchTab('read');
 }
@@ -398,13 +383,13 @@ async function saveArticle() {
   const title = document.getElementById('ed-title').value.trim();
   const content = document.getElementById('ed-body').value.trim();
   
-  if (!title || !content) return toast("El título y contenido son obligatorios");
+  if (!title || !content) return toast("El título y el contenido son campos obligatorios.");
   
-  document.getElementById('btn-save').textContent = 'Guardando...';
+  document.getElementById('btn-save').textContent = 'Guardando cambios...';
   
   try {
     if (currentPage) {
-      // Actualizar
+      // Editar existente
       const { error } = await sbClient.from('wiki_pages')
         .update({ title, content, updated_at: new Date().toISOString() })
         .eq('id', currentPage.id);
@@ -412,35 +397,35 @@ async function saveArticle() {
       currentPage.title = title;
       currentPage.content = content;
       currentPage.updated_at = new Date().toISOString();
-      toast("Página actualizada");
+      toast("Cambios guardados con éxito.");
     } else {
-      // Insertar nuevo
+      // Crear nuevo de forma anónima
       const { data, error } = await sbClient.from('wiki_pages')
-        .insert({ title, content })
+        .insert({ title, content, updated_at: new Date().toISOString() })
         .select();
       if (error) throw error;
       currentPage = data[0];
-      toast("Página creada");
+      toast("Nuevo artículo publicado.");
     }
     
     await loadAllPages();
     openArticle(currentPage);
     
   } catch(e) {
-    toast("Error: " + e.message);
+    toast("Error al guardar: " + e.message);
   } finally {
-    document.getElementById('btn-save').textContent = 'Publicar cambios';
+    document.getElementById('btn-save').textContent = 'Publicar página';
   }
 }
 
 async function deleteArticle() {
-  if (!currentPage || !confirm("¿Seguro que deseas borrar este artículo para siempre?")) return;
+  if (!currentPage || !confirm("¿Estás seguro de que deseas eliminar permanentemente esta página?")) return;
   try {
     const { error } = await sbClient.from('wiki_pages').delete().eq('id', currentPage.id);
     if (error) throw error;
-    toast("Artículo borrado");
+    toast("Artículo removido.");
     showHome();
-  } catch(e) { toast("Error borrando: " + e.message); }
+  } catch(e) { toast("Error: " + e.message); }
 }
 
 function cancelEdit() {
@@ -448,7 +433,7 @@ function cancelEdit() {
 }
 
 // ==========================================
-// EDITOR: HERRAMIENTAS Y SUBIDA DE IMAGEN
+// INSERCIÓN DE FORMATO Y SUBIDA DE IMÁGENES
 // ==========================================
 function insertFormat(prefix, suffix) {
   const txtarea = document.getElementById('ed-body');
@@ -460,7 +445,6 @@ function insertFormat(prefix, suffix) {
   const replacement = prefix + selectedText + suffix;
   txtarea.value = text.substring(0, start) + replacement + text.substring(end);
   
-  // Reposicionar cursor
   txtarea.focus();
   txtarea.selectionStart = start + prefix.length;
   txtarea.selectionEnd = end + prefix.length + selectedText.length;
@@ -469,41 +453,40 @@ function insertFormat(prefix, suffix) {
 async function handleImageUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
-  if (!sbClient) return toast("Conecta a Supabase primero");
+  if (!sbClient) return toast("Falta conectar la base de datos.");
 
   const ind = document.getElementById('uploading-indicator');
-  ind.style.display = 'inline';
+  ind.style.display = 'inline-block';
 
   try {
-    // Generar nombre seguro y único
     const ext = file.name.split('.').pop();
-    const safeName = Date.now() + '_' + Math.random().toString(36).substring(7) + '.' + ext;
+    const uniqueName = Date.now() + '_' + Math.random().toString(36).substring(7) + '.' + ext;
     
-    // Subir a bucket 'wiki-images'
-    const { data, error } = await sbClient.storage.from('wiki-images').upload(safeName, file, { cacheControl: '3600', upsert: false });
+    // Sube al bucket libre 'wiki-images'
+    const { data, error } = await sbClient.storage.from('wiki-images').upload(uniqueName, file, { cacheControl: '3600', upsert: false });
     if (error) throw error;
 
-    // Obtener URL Pública
-    const { data: { publicUrl } } = sbClient.storage.from('wiki-images').getPublicUrl(safeName);
+    // Obtener enlace directo
+    const { data: { publicUrl } } = sbClient.storage.from('wiki-images').getPublicUrl(uniqueName);
     
-    // Insertar código Markdown en el textarea
-    insertFormat('\n![Imagen](' + publicUrl + ')\n', '');
-    toast("Imagen subida e insertada");
+    // Introduce la sintaxis de imagen directamente en la posición del cursor del editor
+    insertFormat('\n!(' + publicUrl + ')\n', '');
+    toast("Imagen subida con éxito e insertada.");
 
   } catch(e) {
-    toast("Error subiendo: " + e.message);
+    toast("Error en la subida: " + e.message);
   } finally {
     ind.style.display = 'none';
-    e.target.value = ''; // Reset input
+    e.target.value = ''; 
   }
 }
 
 // ==========================================
-// DISCUSIÓN (COMENTARIOS)
+// CONTROL DE COMENTARIOS (DISCUSIÓN)
 // ==========================================
 async function loadComments() {
   const list = document.getElementById('comments-list');
-  list.innerHTML = '<div class="spinner"></div> Cargando comentarios...';
+  list.innerHTML = 'Cargando hilos de discusión...';
   
   try {
     const { data, error } = await sbClient.from('wiki_comments')
@@ -515,23 +498,24 @@ async function loadComments() {
     
     list.innerHTML = '';
     if (data.length === 0) {
-      list.innerHTML = '<p style="color:#54595d; font-style:italic;">Aún no hay discusiones sobre esta página. ¡Sé el primero!</p>';
+      list.innerHTML = '<p style="color:#54595d; font-style:italic; font-size:0.9em;">Aún no hay notas ni discusiones sobre este artículo. Puedes escribir la primera abajo.</p>';
     } else {
       data.forEach(c => {
         const date = new Date(c.created_at).toLocaleString('es-ES');
-        list.innerHTML += `
-          <div class="comment-box">
-            <div class="comment-meta">
-              <span><b>${DOMPurify.sanitize(c.author)}</b> comentó el ${date}:</span>
-              <button class="delete-comment-btn" onclick="deleteComment('${c.id}')">[borrar]</button>
-            </div>
-            <div class="comment-body">${DOMPurify.sanitize(c.body)}</div>
+        const item = document.createElement('div');
+        item.className = 'comment-box';
+        item.innerHTML = `
+          <div class="comment-meta">
+            <span>🗣️ <b>${DOMPurify.sanitize(c.author)}</b> — ${date}</span>
+            <a style="color:#d33; font-size:0.85em;" onclick="deleteComment('${c.id}')">[eliminar]</a>
           </div>
+          <div class="comment-body">${DOMPurify.sanitize(c.body)}</div>
         `;
+        list.appendChild(item);
       });
     }
   } catch(e) {
-    list.innerHTML = '<p style="color:red">Error cargando comentarios.</p>';
+    list.innerHTML = '<p style="color:red">No se pudo cargar la pestaña de discusión.</p>';
   }
 }
 
@@ -539,7 +523,7 @@ async function submitComment() {
   const author = document.getElementById('comment-author').value.trim() || 'Anónimo';
   const body = document.getElementById('comment-body').value.trim();
   
-  if (!body) return toast("El comentario no puede estar vacío");
+  if (!body) return toast("Por favor, escribe un mensaje válido.");
   
   try {
     const { error } = await sbClient.from('wiki_comments').insert({
@@ -550,29 +534,29 @@ async function submitComment() {
     if (error) throw error;
     
     document.getElementById('comment-body').value = '';
-    toast("Comentario publicado");
+    toast("Aportación enviada.");
     loadComments();
     
-  } catch(e) { toast("Error: " + e.message); }
+  } catch(e) { toast("Error al comentar: " + e.message); }
 }
 
 async function deleteComment(id) {
-  if (!confirm("¿Borrar este comentario?")) return;
+  if (!confirm("¿Deseas remover este comentario de la discusión?")) return;
   try {
     const { error } = await sbClient.from('wiki_comments').delete().eq('id', id);
     if (error) throw error;
     loadComments();
-  } catch(e) { toast("Error al borrar: " + e.message); }
+  } catch(e) { toast("Error: " + e.message); }
 }
 
 // ==========================================
-// UTILIDADES
+// AUXILIARES VISUALES
 // ==========================================
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.style.opacity = '1';
-  setTimeout(() => t.style.opacity = '0', 3000);
+  setTimeout(() => t.style.opacity = '0', 3500);
 }
 
 function showLoader(show) {
