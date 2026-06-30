@@ -3,378 +3,581 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Wiki</title>
+<title>Wikilibre, la enciclopedia libre</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <style>
-  :root{
-    --bg:#101113; --surface:#191a1d; --surface2:#222327; --border:#2c2d31;
-    --accent:#4a90e2; --accent2:#6ba8ec; --text:#eef0f2; --muted:#9aa0a8;
-    --radius:10px; --font:'Segoe UI', system-ui, sans-serif;
+  /* ── ESTILO TIPO WIKIPEDIA (Vector Skin Clone) ── */
+  :root {
+    --bg-body: #f6f6f6;
+    --bg-content: #ffffff;
+    --border-color: #a2a9b1;
+    --link-color: #0645ad;
+    --link-hover: #0b0080;
+    --text-main: #202122;
+    --font-sans: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+    --font-serif: 'Linux Libertine', 'Georgia', 'Times', serif;
   }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  body{background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh;}
-  a{color:var(--accent); text-decoration:none;}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-body); color: var(--text-main); font-family: var(--font-sans); font-size: 14px; display: flex; min-height: 100vh; }
+  a { color: var(--link-color); text-decoration: none; cursor: pointer; }
+  a:hover { text-decoration: underline; }
 
-  nav{
-    position:sticky; top:0; z-index:100; background:rgba(16,17,19,.97); backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--border); display:flex; align-items:center;
-    padding:0 12px; height:54px; gap:8px;
-    padding-left:max(12px, env(safe-area-inset-left));
-    padding-right:max(12px, env(safe-area-inset-right));
-  }
-  .logo{font-size:1.2rem; font-weight:800; color:var(--accent); white-space:nowrap; flex-shrink:0;}
-  .logo span{color:var(--text);}
-  .back{color:var(--muted); font-size:.85rem; flex-shrink:0; white-space:nowrap;}
-  .search-bar{flex:1; display:flex; min-width:0;}
-  .search-bar input{
-    flex:1; min-width:0; background:var(--surface); border:1px solid var(--border);
-    border-right:none; border-radius:var(--radius) 0 0 var(--radius);
-    padding:8px 12px; color:var(--text); font-size:16px; outline:none;
-  }
-  .search-bar input:focus{border-color:var(--accent);}
-  .search-bar button{
-    background:var(--surface2); border:1px solid var(--border);
-    border-radius:0 var(--radius) var(--radius) 0; padding:8px 12px; color:var(--muted);
-    cursor:pointer; flex-shrink:0;
-  }
-  .btn-new{
-    background:var(--accent); color:#fff; border:none; padding:8px 13px;
-    border-radius:var(--radius); font-weight:700; cursor:pointer; font-size:.85rem;
-    white-space:nowrap; flex-shrink:0;
-  }
+  /* Barra lateral izquierda */
+  #mw-panel { width: 11em; position: fixed; top: 0; left: 0; padding: 1.5em; height: 100vh; overflow-y: auto; }
+  .mw-logo { display: block; text-align: center; margin-bottom: 2em; text-decoration: none !important; }
+  .mw-logo-icon { font-size: 40px; }
+  .mw-logo-wordmark { font-family: var(--font-serif); font-size: 1.5em; color: black; display: block; margin-top: 5px; }
+  .mw-logo-tagline { font-size: 0.75em; color: #54595d; display: block; }
+  .portal { margin-bottom: 1.5em; }
+  .portal h3 { font-size: 0.75em; color: #54595d; margin-bottom: 0.5em; text-transform: uppercase; border-bottom: 1px solid #c8ccd1; padding-bottom: 3px; font-weight: normal; }
+  .portal ul { list-style: none; }
+  .portal li { font-size: 0.85em; margin-bottom: 0.4em; }
 
-  #config-banner{
-    background:linear-gradient(135deg,#0a131f,#10182a); border:1px solid #15355a;
-    border-radius:var(--radius); padding:20px; margin:20px 12px;
-  }
-  #config-banner h2{color:var(--accent); margin-bottom:10px; font-size:1rem;}
-  #config-banner p{color:var(--muted); font-size:.85rem; margin-bottom:14px; line-height:1.6;}
-  .config-fields{display:flex; flex-direction:column; gap:10px;}
-  .config-fields input{
-    background:var(--surface); border:1px solid var(--border); border-radius:8px;
-    padding:11px 14px; color:var(--text); font-size:16px; outline:none;
-    font-family:monospace; width:100%;
-  }
-  .btn-save{
-    background:var(--accent); color:#fff; border:none; padding:12px 20px;
-    border-radius:8px; font-weight:600; cursor:pointer; width:100%; font-size:1rem;
-  }
+  /* Contenedor principal */
+  #content-wrapper { margin-left: 11em; flex: 1; display: flex; flex-direction: column; }
+  
+  /* Barra superior (Búsqueda y herramientas de usuario) */
+  #mw-head { height: 3.5em; display: flex; justify-content: flex-end; align-items: flex-end; padding: 0 1.5em; position: relative; z-index: 10; }
+  .search-box { display: flex; align-items: center; background: white; border: 1px solid #a2a9b1; border-radius: 2px; overflow: hidden; margin-right: 20px; margin-bottom: 5px;}
+  .search-box input { border: none; padding: 6px 10px; font-size: 0.9em; outline: none; width: 200px; }
+  .search-box button { background: none; border: none; padding: 6px 10px; cursor: pointer; font-size: 1em; color: var(--text-main); }
+  .user-tools { font-size: 0.75em; display: flex; gap: 15px; margin-bottom: 10px; }
+  
+  /* Área de contenido blanco */
+  #content { background: var(--bg-content); border-left: 1px solid var(--border-color); border-top: 1px solid var(--border-color); flex: 1; padding: 1.5em 2em; position: relative; }
+  
+  /* Pestañas (Artículo, Discusión, Editar, etc.) */
+  #p-namespaces { position: absolute; top: -36px; left: 0; display: flex; gap: 2px; }
+  .tab { background: #f6f6f6; border: 1px solid transparent; border-bottom: none; padding: 8px 12px; font-size: 0.85em; cursor: pointer; color: var(--link-color); border-radius: 2px 2px 0 0; }
+  .tab:hover { text-decoration: underline; }
+  .tab.selected { background: var(--bg-content); border-color: var(--border-color); border-bottom: 1px solid var(--bg-content); color: var(--text-main); font-weight: bold; position: relative; z-index: 2; top: 1px; }
 
-  main{max-width:900px; margin:0 auto; padding:20px 16px;}
+  /* Vistas */
+  .view-section { display: none; }
+  .view-section.active { display: block; }
 
-  /* list view */
-  #list-title{font-size:1.3rem; font-weight:800; margin-bottom:4px;}
-  #list-sub{color:var(--muted); font-size:.85rem; margin-bottom:18px;}
-  .page-item{
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:border-color .15s;
-  }
-  .page-item:hover{border-color:var(--accent);}
-  .page-item h3{font-size:1rem; margin-bottom:4px;}
-  .page-item p{font-size:.82rem; color:var(--muted); line-height:1.4;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
-  .page-meta{font-size:.72rem; color:#6b7178; margin-top:6px;}
+  /* Tipografía de artículos */
+  .firstHeading { font-family: var(--font-serif); font-weight: normal; font-size: 2em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25em; margin-bottom: 0.25em; }
+  #siteSub { font-size: 0.85em; color: #54595d; margin-bottom: 1.5em; }
+  
+  /* Renderizado de Markdown para parecerse a Wiki */
+  .mw-parser-output { font-size: 1.05em; line-height: 1.6; }
+  .mw-parser-output h2 { font-family: var(--font-serif); font-weight: normal; font-size: 1.6em; border-bottom: 1px solid var(--border-color); margin: 1em 0 0.5em; padding-bottom: 0.2em; }
+  .mw-parser-output h3 { font-family: var(--font-serif); font-weight: bold; font-size: 1.2em; margin: 1em 0 0.5em; }
+  .mw-parser-output p { margin-bottom: 1em; }
+  .mw-parser-output ul, .mw-parser-output ol { margin: 0.3em 0 1em 2em; }
+  .mw-parser-output img { max-width: 100%; border: 1px solid #c8ccd1; padding: 3px; background: #fff; border-radius: 2px; }
+  
+  /* Editor */
+  .editor-toolbar { background: #eaecf0; border: 1px solid var(--border-color); border-bottom: none; padding: 6px; display: flex; gap: 5px; align-items: center; border-radius: 2px 2px 0 0; }
+  .tool-btn { background: #fff; border: 1px solid #c8ccd1; padding: 4px 8px; cursor: pointer; border-radius: 2px; font-size: 0.85em; color: var(--text-main); }
+  .tool-btn:hover { background: #f6f6f6; }
+  .editor-area textarea { width: 100%; min-height: 400px; border: 1px solid var(--border-color); padding: 10px; font-family: monospace; font-size: 1em; resize: vertical; outline: none; }
+  .editor-area textarea:focus { border-color: var(--link-color); }
+  .editor-actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }
+  .btn-save { background: var(--link-color); color: white; border: none; padding: 8px 16px; font-weight: bold; cursor: pointer; border-radius: 2px; font-size: 0.9em; }
+  .btn-save:hover { background: var(--link-hover); }
+  
+  /* Comentarios (Discusión) */
+  .comment-box { border: 1px solid #c8ccd1; background: #f8f9fa; padding: 15px; margin-bottom: 15px; }
+  .comment-meta { font-size: 0.8em; color: #54595d; border-bottom: 1px solid #eaecf0; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between;}
+  .comment-body { font-size: 0.95em; line-height: 1.5; white-space: pre-wrap; }
+  .comment-form { border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 20px; }
+  .comment-form input, .comment-form textarea { width: 100%; max-width: 500px; padding: 8px; margin-bottom: 10px; border: 1px solid #c8ccd1; display: block; font-family: inherit; }
+  .delete-comment-btn { color: #d33; cursor: pointer; background: none; border: none; font-size: 0.9em; }
+  .delete-comment-btn:hover { text-decoration: underline; }
 
-  #empty{text-align:center; padding:60px 20px; color:var(--muted);}
-  #empty .icon{font-size:2.5rem; margin-bottom:10px;}
+  /* Lista de páginas (Inicio) */
+  .page-list-ul { list-style: square; margin-left: 20px; line-height: 1.8; }
+  .page-list-ul li { font-size: 1.05em; }
 
-  .spinner{
-    width:34px; height:34px; border:3px solid var(--border); border-top-color:var(--accent);
-    border-radius:50%; margin:60px auto; animation:spin .8s linear infinite; display:none;
-  }
-  @keyframes spin{to{transform:rotate(360deg);}}
+  /* Utilidades */
+  #config-banner { background: #fff3cd; border: 1px solid #ffe69c; padding: 15px; margin-bottom: 20px; color: #664d03; }
+  #config-banner input { padding: 5px; width: 250px; margin-right: 5px; }
+  #toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 10px 20px; border-radius: 4px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
+  .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--link-color); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  #loader { display: none; margin: 20px auto; width: 40px; height: 40px; }
 
-  /* article view */
-  #article-view{display:none;}
-  .article-header{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:6px;}
-  #article-title{font-size:1.6rem; font-weight:800; line-height:1.3;}
-  .article-actions{display:flex; gap:8px; flex-shrink:0;}
-  .icon-btn{
-    background:var(--surface2); border:1px solid var(--border); color:var(--muted);
-    padding:8px 12px; border-radius:8px; cursor:pointer; font-size:.8rem;
-  }
-  .icon-btn:hover{color:var(--text); border-color:var(--accent);}
-  .icon-btn.danger:hover{color:#ff5555; border-color:#ff5555;}
-  #article-meta{color:var(--muted); font-size:.78rem; margin-bottom:18px;}
-  #article-body{font-size:.98rem; line-height:1.75; white-space:pre-wrap; word-wrap:break-word;}
-  .back-link{display:inline-block; margin-bottom:16px; color:var(--muted); font-size:.85rem; cursor:pointer;}
-  .back-link:hover{color:var(--text);}
-
-  /* editor view */
-  #editor-view{display:none;}
-  #editor-view label{font-size:.83rem; color:var(--muted); display:block; margin-bottom:6px;}
-  #editor-view input, #editor-view textarea{
-    width:100%; background:var(--surface); border:1px solid var(--border); border-radius:8px;
-    padding:11px 14px; color:var(--text); font-size:16px; outline:none; font-family:var(--font);
-    margin-bottom:16px;
-  }
-  #editor-view input:focus, #editor-view textarea:focus{border-color:var(--accent);}
-  #editor-view textarea{min-height:340px; resize:vertical; line-height:1.6; font-size:.95rem;}
-  .editor-hint{font-size:.78rem; color:#6b7178; margin-top:-10px; margin-bottom:16px;}
-  .editor-actions{display:flex; gap:10px;}
-  .btn-submit{
-    background:var(--accent); color:#fff; border:none; padding:12px 22px;
-    border-radius:8px; font-weight:700; cursor:pointer; font-size:.9rem;
-  }
-  .btn-cancel{
-    background:var(--surface2); color:var(--text); border:1px solid var(--border);
-    padding:12px 22px; border-radius:8px; font-weight:600; cursor:pointer; font-size:.9rem;
-  }
-
-  /* confirm delete */
-  .overlay{
-    display:none; position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.85);
-    align-items:center; justify-content:center; padding:20px;
-  }
-  .overlay.open{display:flex;}
-  .confirm-modal{
-    background:var(--surface); border:1px solid var(--border); border-radius:14px;
-    padding:24px; max-width:340px; width:100%; text-align:center;
-  }
-  .confirm-modal h3{margin-bottom:8px;}
-  .confirm-modal p{color:var(--muted); font-size:.85rem; margin-bottom:20px;}
-  .confirm-btns{display:flex; gap:10px;}
-  .confirm-btns button{flex:1; padding:11px; border-radius:8px; font-weight:600; cursor:pointer; border:none; font-size:.9rem;}
-  .btn-cancel2{background:var(--surface2); color:var(--text); border:1px solid var(--border) !important;}
-  .btn-danger{background:#ff4444; color:#fff;}
-
-  #toast{
-    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px);
-    background:var(--surface2); border:1px solid var(--border); color:var(--text);
-    padding:12px 20px; border-radius:10px; font-size:.85rem; opacity:0; transition:all .3s;
-    z-index:300; max-width:90vw;
-  }
-  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
-  #toast.error{border-color:#ff4444; color:#ff8888;}
 </style>
 </head>
 <body>
 
-<nav>
-  <a class="logo" href="index.html">Wiki<span>libre</span></a>
-  <a class="back" href="index.html">↩ Inicio</a>
-  <div class="search-bar">
-    <input id="search-input" type="text" placeholder="Buscar artículos…" />
-    <button onclick="doSearch()">🔍</button>
-  </div>
-  <button class="btn-new" onclick="openEditor()">+ Nuevo</button>
-</nav>
+<div id="mw-panel">
+  <a href="#" onclick="showHome()" class="mw-logo">
+    <div class="mw-logo-icon">🌐</div>
+    <span class="mw-logo-wordmark">Wikilibre</span>
+    <span class="mw-logo-tagline">La enciclopedia libre</span>
+  </a>
 
-<div id="config-banner" style="display:none">
-  <h2>⚙️ Configura Supabase</h2>
-  <p>Pega tus credenciales de <a href="https://supabase.com" target="_blank">supabase.com</a> para activar la wiki. (Si ya configuraste VidTube con el mismo proyecto, esto se completará solo).</p>
-  <div class="config-fields">
-    <input id="cfg-url" type="text" placeholder="Project URL → https://xxxx.supabase.co" autocomplete="off" />
-    <input id="cfg-key" type="text" placeholder="Publishable key → sb_publishable_…" autocomplete="off" />
-    <button class="btn-save" onclick="saveConfig()">Guardar y conectar</button>
+  <div class="portal">
+    <h3>Navegación</h3>
+    <ul>
+      <li><a href="#" onclick="showHome()">Portada</a></li>
+      <li><a href="#" onclick="openRandom()">Página aleatoria</a></li>
+      <li><a href="#" onclick="startNewPage()">Crear artículo nuevo</a></li>
+    </ul>
+  </div>
+
+  <div class="portal">
+    <h3>Herramientas</h3>
+    <ul>
+      <li><a href="#">Cambios recientes</a></li>
+      <li><a href="#">Páginas especiales</a></li>
+      <li><a href="https://supabase.com" target="_blank">Panel de Base de Datos</a></li>
+    </ul>
   </div>
 </div>
 
-<main>
-  <div class="spinner" id="loader"></div>
-
-  <!-- LIST VIEW -->
-  <div id="list-view">
-    <div id="list-title">📖 Artículos</div>
-    <div id="list-sub">Cualquiera puede crear o editar una página, sin registrarse.</div>
-    <div id="page-list"></div>
+<div id="content-wrapper">
+  <div id="mw-head">
+    <div class="user-tools">
+      <span>👤 No has accedido</span>
+      <a href="#">Contribuciones</a>
+      <a href="#">Crear una cuenta</a>
+      <a href="#">Acceder</a>
+    </div>
+    <div class="search-box">
+      <input id="search-input" type="text" placeholder="Buscar en Wikilibre" onkeydown="if(event.key==='Enter') doSearch()" />
+      <button onclick="doSearch()">🔍</button>
+    </div>
   </div>
 
-  <!-- ARTICLE VIEW -->
-  <div id="article-view">
-    <div class="back-link" onclick="showList()">← Volver a la lista</div>
-    <div class="article-header">
-      <div id="article-title"></div>
-      <div class="article-actions">
-        <button class="icon-btn" onclick="editCurrent()">✏️ Editar</button>
-        <button class="icon-btn danger" onclick="askDelete()">🗑</button>
+  <div id="content">
+    
+    <div id="p-namespaces">
+      <div id="tab-read" class="tab selected" onclick="switchTab('read')">Artículo</div>
+      <div id="tab-talk" class="tab" onclick="switchTab('talk')">Discusión</div>
+      <div id="tab-edit" class="tab" onclick="switchTab('edit')">Editar / Crear</div>
+    </div>
+
+    <div id="config-banner" style="display:none">
+      <strong>⚙️ Faltan credenciales de Supabase.</strong>
+      <input id="cfg-url" type="text" placeholder="URL (https://xxxx.supabase.co)" />
+      <input id="cfg-key" type="text" placeholder="Anon Key" />
+      <button onclick="saveConfig()" class="btn-save">Conectar</button>
+    </div>
+
+    <h1 id="main-heading" class="firstHeading">Portada</h1>
+    <div id="siteSub">De Wikilibre, la enciclopedia libre</div>
+    
+    <div id="loader" class="spinner"></div>
+
+    <div id="view-home" class="view-section active">
+      <div class="mw-parser-output">
+        <p><b>Bienvenidos a Wikilibre</b>, un proyecto de enciclopedia libre que cualquiera puede editar. Actualmente tenemos <b id="page-count">0</b> artículos en español.</p>
+        <h2>Índice de artículos</h2>
+        <ul id="page-list" class="page-list-ul"></ul>
       </div>
     </div>
-    <div id="article-meta"></div>
-    <div id="article-body"></div>
-  </div>
 
-  <!-- EDITOR VIEW -->
-  <div id="editor-view">
-    <div class="back-link" onclick="cancelEdit()">← Cancelar</div>
-    <label>Título del artículo *</label>
-    <input id="ed-title" type="text" placeholder="Ej: Historia de la República Dominicana" />
-    <label>Contenido *</label>
-    <textarea id="ed-body" placeholder="Escribe el artículo aquí…"></textarea>
-    <div class="editor-hint">Texto plano. Los saltos de línea se respetan.</div>
-    <div class="editor-actions">
-      <button class="btn-submit" id="btn-ed-submit" onclick="submitPage()">Guardar artículo</button>
-      <button class="btn-cancel" onclick="cancelEdit()">Cancelar</button>
+    <div id="view-read" class="view-section">
+      <div id="article-body" class="mw-parser-output"></div>
+      <br>
+      <hr style="border: 0; border-top: 1px solid #eaecf0;">
+      <p style="font-size: 0.8em; color: #54595d; margin-top: 10px;" id="article-meta"></p>
     </div>
-  </div>
-</main>
 
-<!-- CONFIRM DELETE -->
-<div class="overlay" id="confirm-overlay">
-  <div class="confirm-modal">
-    <h3>¿Eliminar artículo?</h3>
-    <p>Esta acción no se puede deshacer.</p>
-    <div class="confirm-btns">
-      <button class="btn-cancel2" onclick="closeConfirm()">Cancelar</button>
-      <button class="btn-danger" onclick="confirmDelete()">Eliminar</button>
+    <div id="view-talk" class="view-section">
+      <div class="mw-parser-output">
+        <p>Esta es la página de discusión para mejorar el artículo <b><span id="talk-title"></span></b>. Deje aquí sus comentarios y sugerencias.</p>
+        <div id="comments-list"></div>
+        
+        <div class="comment-form">
+          <h3>Añadir un nuevo comentario</h3>
+          <input type="text" id="comment-author" placeholder="Tu nombre o seudónimo" />
+          <textarea id="comment-body" rows="4" placeholder="Escribe tu mensaje aquí..."></textarea>
+          <button class="btn-save" onclick="submitComment()">Publicar comentario</button>
+        </div>
+      </div>
     </div>
+
+    <div id="view-edit" class="view-section">
+      <div style="margin-bottom: 10px;">
+        <label><b>Título del artículo:</b></label>
+        <input type="text" id="ed-title" style="width:100%; padding:8px; font-size:1.2em; border: 1px solid var(--border-color); margin-top: 5px;" />
+      </div>
+      
+      <div class="editor-toolbar">
+        <button class="tool-btn" onclick="insertFormat('**', '**')" title="Negrita"><b>N</b></button>
+        <button class="tool-btn" onclick="insertFormat('*', '*')" title="Cursiva"><i>C</i></button>
+        <button class="tool-btn" onclick="insertFormat('## ', '')" title="Título">Tít</button>
+        <button class="tool-btn" onclick="insertFormat('[', '](https://)')" title="Enlace">🔗</button>
+        
+        <span style="border-left: 1px solid #c8ccd1; height: 20px; margin: 0 5px;"></span>
+        
+        <input type="file" id="img-upload-input" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" />
+        <button class="tool-btn" onclick="document.getElementById('img-upload-input').click()" title="Subir Imagen al Servidor">📷 Insertar Imagen</button>
+        <span id="uploading-indicator" style="display:none; font-size:0.8em; color:var(--link-color);">Subiendo...</span>
+      </div>
+      
+      <div class="editor-area">
+        <textarea id="ed-body" placeholder="Comienza a escribir el artículo usando formato Markdown..."></textarea>
+      </div>
+      
+      <div class="editor-actions">
+        <button class="btn-save" id="btn-save" onclick="saveArticle()">Publicar cambios</button>
+        <a href="#" onclick="cancelEdit()" style="color: #d33;">Cancelar</a>
+        
+        <button onclick="deleteArticle()" style="margin-left:auto; background:none; border:1px solid #d33; color:#d33; padding:5px 10px; cursor:pointer;" id="btn-delete">Eliminar artículo</button>
+      </div>
+      <p style="font-size:0.8em; color:#54595d; margin-top:10px;">Al guardar los cambios, aceptas que tus contribuciones sean publicadas libremente.</p>
+    </div>
+
   </div>
 </div>
 
-<div id="toast"></div>
+<div id="toast">Notificación</div>
 
 <script>
-const STORAGE_KEY_URL = 'vt_supabase_url'; // mismas claves que VidTube → comparten config
+// ==========================================
+// CONFIGURACIÓN DE SUPABASE
+// ==========================================
+const STORAGE_KEY_URL = 'vt_supabase_url';
 const STORAGE_KEY_KEY = 'vt_supabase_key';
-const TABLE = 'wiki_pages';
 
-let sbClient = null, allPages = [], currentPage = null, editingId = null;
-
-// ── CONFIG ────────────────────────────────────────────
-function saveConfig() {
-  const url = document.getElementById('cfg-url').value.trim();
-  const key = document.getElementById('cfg-key').value.trim();
-  if (!url || !key) { toast('Completa ambos campos', true); return; }
-  localStorage.setItem(STORAGE_KEY_URL, url);
-  localStorage.setItem(STORAGE_KEY_KEY, key);
-  document.getElementById('config-banner').style.display = 'none';
-  initSupabase(url, key); loadPages();
-}
-function initSupabase(url, key) { sbClient = window.supabase.createClient(url, key); }
+let sbClient = null;
+let allPages = [];
+let currentPage = null;
+let currentTab = 'home'; // 'home', 'read', 'talk', 'edit'
 
 window.addEventListener('DOMContentLoaded', () => {
   const url = localStorage.getItem(STORAGE_KEY_URL) || '';
   const key = localStorage.getItem(STORAGE_KEY_KEY) || '';
-  if (url && key) { initSupabase(url, key); loadPages(); }
-  else { document.getElementById('config-banner').style.display = 'block'; }
+  if (url && key) { 
+    initSupabase(url, key); 
+    loadAllPages(); 
+  } else { 
+    document.getElementById('config-banner').style.display = 'block'; 
+  }
 });
 
-// ── LOAD ─────────────────────────────────────────────
-async function loadPages() {
-  document.getElementById('loader').style.display = 'block';
-  document.getElementById('page-list').innerHTML = '';
+function saveConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const key = document.getElementById('cfg-key').value.trim();
+  if (!url || !key) return alert('Completa ambos campos');
+  localStorage.setItem(STORAGE_KEY_URL, url);
+  localStorage.setItem(STORAGE_KEY_KEY, key);
+  document.getElementById('config-banner').style.display = 'none';
+  initSupabase(url, key); 
+  loadAllPages();
+}
+
+function initSupabase(url, key) {
+  sbClient = window.supabase.createClient(url, key);
+}
+
+// ==========================================
+// NAVEGACIÓN Y PESTAÑAS
+// ==========================================
+function switchTab(tab) {
+  if (tab !== 'home' && !currentPage && tab !== 'edit') return;
+  
+  // Esconder todo
+  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('selected'));
+  document.getElementById('p-namespaces').style.display = (tab === 'home') ? 'none' : 'flex';
+
+  currentTab = tab;
+
+  if (tab === 'home') {
+    document.getElementById('main-heading').textContent = "Portada";
+    document.getElementById('view-home').classList.add('active');
+    loadAllPages();
+  } 
+  else if (tab === 'read') {
+    document.getElementById('tab-read').classList.add('selected');
+    document.getElementById('main-heading').textContent = currentPage.title;
+    document.getElementById('view-read').classList.add('active');
+  } 
+  else if (tab === 'talk') {
+    document.getElementById('tab-talk').classList.add('selected');
+    document.getElementById('main-heading').textContent = "Discusión: " + currentPage.title;
+    document.getElementById('talk-title').textContent = currentPage.title;
+    document.getElementById('view-talk').classList.add('active');
+    loadComments();
+  } 
+  else if (tab === 'edit') {
+    document.getElementById('tab-edit').classList.add('selected');
+    document.getElementById('main-heading').textContent = currentPage ? "Editando " + currentPage.title : "Creando artículo nuevo";
+    document.getElementById('view-edit').classList.add('active');
+    
+    // Preparar el editor
+    document.getElementById('ed-title').value = currentPage ? currentPage.title : '';
+    document.getElementById('ed-body').value = currentPage ? (currentPage.content || '') : '';
+    document.getElementById('btn-delete').style.display = currentPage ? 'block' : 'none';
+  }
+}
+
+function showHome() {
+  currentPage = null;
+  switchTab('home');
+}
+
+function startNewPage() {
+  currentPage = null;
+  switchTab('edit');
+}
+
+function openRandom() {
+  if (allPages.length === 0) return toast("No hay artículos aún");
+  const randomPage = allPages[Math.floor(Math.random() * allPages.length)];
+  openArticle(randomPage);
+}
+
+// ==========================================
+// GESTIÓN DE ARTÍCULOS
+// ==========================================
+async function loadAllPages() {
+  if(!sbClient) return;
+  showLoader(true);
   try {
-    const { data, error } = await sbClient.from(TABLE).select('*').order('updated_at', { ascending: false });
+    const { data, error } = await sbClient.from('wiki_pages').select('id, title, content, updated_at').order('title');
     if (error) throw error;
     allPages = data || [];
-    renderList(allPages);
-  } catch(e) { toast('Error al cargar: '+e.message, true); renderList([]); }
-  finally { document.getElementById('loader').style.display = 'none'; }
+    
+    document.getElementById('page-count').textContent = allPages.length;
+    const list = document.getElementById('page-list');
+    list.innerHTML = '';
+    
+    allPages.forEach(p => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.textContent = p.title;
+      a.onclick = () => openArticle(p);
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  } catch(e) { console.error(e); }
+  showLoader(false);
 }
 
-function renderList(pages) {
-  const list = document.getElementById('page-list');
-  if (!pages.length) {
-    list.innerHTML = `<div id="empty"><div class="icon">📭</div><h3>No hay artículos aún</h3><p>¡Crea el primero!</p></div>`;
-    return;
-  }
-  list.innerHTML = pages.map(p => `
-    <div class="page-item" onclick="openArticle('${p.id}')">
-      <h3>${esc(p.title)}</h3>
-      <p>${esc((p.content||'').slice(0,160))}</p>
-      <div class="page-meta">Editado el ${new Date(p.updated_at||p.created_at).toLocaleDateString('es-DO',{day:'numeric',month:'short',year:'numeric'})}</div>
-    </div>`).join('');
-}
-
-// ── SEARCH ────────────────────────────────────────────
 function doSearch() {
   const q = document.getElementById('search-input').value.toLowerCase().trim();
-  if (!q) { renderList(allPages); return; }
-  renderList(allPages.filter(p => p.title.toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q)));
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.activeElement === document.getElementById('search-input')) doSearch();
-  if (e.key === 'Escape') { closeConfirm(); }
-});
-
-// ── VIEWS ─────────────────────────────────────────────
-function showList() {
-  document.getElementById('list-view').style.display = 'block';
-  document.getElementById('article-view').style.display = 'none';
-  document.getElementById('editor-view').style.display = 'none';
+  if (!q) return showHome();
+  
   currentPage = null;
-}
-function openArticle(id) {
-  const p = allPages.find(x => x.id === id); if (!p) return;
-  currentPage = p;
-  document.getElementById('article-title').textContent = p.title;
-  document.getElementById('article-body').textContent = p.content || '';
-  const date = new Date(p.updated_at||p.created_at).toLocaleDateString('es-DO',{day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('article-meta').textContent = `Última edición: ${date}`;
-  document.getElementById('list-view').style.display = 'none';
-  document.getElementById('editor-view').style.display = 'none';
-  document.getElementById('article-view').style.display = 'block';
+  document.getElementById('p-namespaces').style.display = 'none';
+  document.getElementById('main-heading').textContent = "Resultados de búsqueda: " + q;
+  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-home').classList.add('active');
+  
+  const filtered = allPages.filter(p => p.title.toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q));
+  
+  const list = document.getElementById('page-list');
+  list.innerHTML = filtered.length ? '' : '<i>No se encontraron resultados. <a href="#" onclick="startNewPage()">Puedes crear esta página.</a></i>';
+  
+  filtered.forEach(p => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.textContent = p.title;
+    a.onclick = () => openArticle(p);
+    li.appendChild(a);
+    list.appendChild(li);
+  });
 }
 
-// ── EDITOR ────────────────────────────────────────────
-function openEditor() {
-  if (!sbClient) { toast('Configura Supabase primero', true); return; }
-  editingId = null;
-  document.getElementById('ed-title').value = '';
-  document.getElementById('ed-body').value = '';
-  document.getElementById('list-view').style.display = 'none';
-  document.getElementById('article-view').style.display = 'none';
-  document.getElementById('editor-view').style.display = 'block';
+function openArticle(pageObj) {
+  currentPage = pageObj;
+  
+  // Usar marked para convertir markdown a HTML y DOMPurify para sanitizar por seguridad
+  const rawHtml = marked.parse(currentPage.content || '');
+  const cleanHtml = DOMPurify.sanitize(rawHtml);
+  
+  document.getElementById('article-body').innerHTML = cleanHtml;
+  
+  const date = new Date(currentPage.updated_at).toLocaleString('es-ES');
+  document.getElementById('article-meta').textContent = `Esta página se editó por última vez el ${date}.`;
+  
+  switchTab('read');
 }
-function editCurrent() {
-  if (!currentPage) return;
-  editingId = currentPage.id;
-  document.getElementById('ed-title').value = currentPage.title;
-  document.getElementById('ed-body').value = currentPage.content || '';
-  document.getElementById('list-view').style.display = 'none';
-  document.getElementById('article-view').style.display = 'none';
-  document.getElementById('editor-view').style.display = 'block';
-}
-function cancelEdit() {
-  if (currentPage) openArticle(currentPage.id); else showList();
-}
-async function submitPage() {
+
+async function saveArticle() {
   const title = document.getElementById('ed-title').value.trim();
-  const body  = document.getElementById('ed-body').value.trim();
-  if (!title) { toast('El título es obligatorio', true); return; }
-  if (!body)  { toast('El contenido es obligatorio', true); return; }
-  const btn = document.getElementById('btn-ed-submit');
-  btn.disabled = true; btn.textContent = 'Guardando…';
+  const content = document.getElementById('ed-body').value.trim();
+  
+  if (!title || !content) return toast("El título y contenido son obligatorios");
+  
+  document.getElementById('btn-save').textContent = 'Guardando...';
+  
   try {
-    if (editingId) {
-      const { error } = await sbClient.from(TABLE).update({ title, content: body, updated_at: new Date().toISOString() }).eq('id', editingId);
+    if (currentPage) {
+      // Actualizar
+      const { error } = await sbClient.from('wiki_pages')
+        .update({ title, content, updated_at: new Date().toISOString() })
+        .eq('id', currentPage.id);
       if (error) throw error;
-      toast('Artículo actualizado');
+      currentPage.title = title;
+      currentPage.content = content;
+      currentPage.updated_at = new Date().toISOString();
+      toast("Página actualizada");
     } else {
-      const { data, error } = await sbClient.from(TABLE).insert({ title, content: body, updated_at: new Date().toISOString() }).select();
+      // Insertar nuevo
+      const { data, error } = await sbClient.from('wiki_pages')
+        .insert({ title, content })
+        .select();
       if (error) throw error;
-      toast('Artículo publicado 🎉');
-      if (data && data[0]) editingId = data[0].id;
+      currentPage = data[0];
+      toast("Página creada");
     }
-    await loadPages();
-    const p = allPages.find(x => x.id === editingId);
-    if (p) openArticle(p.id); else showList();
-  } catch(e) { toast('Error: '+e.message, true); }
-  finally { btn.disabled = false; btn.textContent = 'Guardar artículo'; }
+    
+    await loadAllPages();
+    openArticle(currentPage);
+    
+  } catch(e) {
+    toast("Error: " + e.message);
+  } finally {
+    document.getElementById('btn-save').textContent = 'Publicar cambios';
+  }
 }
 
-// ── DELETE ────────────────────────────────────────────
-function askDelete() { if (!currentPage) return; document.getElementById('confirm-overlay').classList.add('open'); }
-function closeConfirm() { document.getElementById('confirm-overlay').classList.remove('open'); }
-async function confirmDelete() {
-  if (!currentPage) return;
+async function deleteArticle() {
+  if (!currentPage || !confirm("¿Seguro que deseas borrar este artículo para siempre?")) return;
   try {
-    const { error } = await sbClient.from(TABLE).delete().eq('id', currentPage.id);
+    const { error } = await sbClient.from('wiki_pages').delete().eq('id', currentPage.id);
     if (error) throw error;
-    toast('Artículo eliminado');
-    closeConfirm();
-    await loadPages();
-    showList();
-  } catch(e) { toast('Error: '+e.message, true); }
+    toast("Artículo borrado");
+    showHome();
+  } catch(e) { toast("Error borrando: " + e.message); }
 }
 
-// ── UTIL ──────────────────────────────────────────────
-function toast(msg, isError=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'show' + (isError ? ' error' : '');
-  clearTimeout(t._timer); t._timer = setTimeout(() => t.className = '', 3200);
+function cancelEdit() {
+  if (currentPage) switchTab('read'); else showHome();
 }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ==========================================
+// EDITOR: HERRAMIENTAS Y SUBIDA DE IMAGEN
+// ==========================================
+function insertFormat(prefix, suffix) {
+  const txtarea = document.getElementById('ed-body');
+  const start = txtarea.selectionStart;
+  const end = txtarea.selectionEnd;
+  const text = txtarea.value;
+  const selectedText = text.substring(start, end);
+  
+  const replacement = prefix + selectedText + suffix;
+  txtarea.value = text.substring(0, start) + replacement + text.substring(end);
+  
+  // Reposicionar cursor
+  txtarea.focus();
+  txtarea.selectionStart = start + prefix.length;
+  txtarea.selectionEnd = end + prefix.length + selectedText.length;
+}
+
+async function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!sbClient) return toast("Conecta a Supabase primero");
+
+  const ind = document.getElementById('uploading-indicator');
+  ind.style.display = 'inline';
+
+  try {
+    // Generar nombre seguro y único
+    const ext = file.name.split('.').pop();
+    const safeName = Date.now() + '_' + Math.random().toString(36).substring(7) + '.' + ext;
+    
+    // Subir a bucket 'wiki-images'
+    const { data, error } = await sbClient.storage.from('wiki-images').upload(safeName, file, { cacheControl: '3600', upsert: false });
+    if (error) throw error;
+
+    // Obtener URL Pública
+    const { data: { publicUrl } } = sbClient.storage.from('wiki-images').getPublicUrl(safeName);
+    
+    // Insertar código Markdown en el textarea
+    insertFormat('\n![Imagen](' + publicUrl + ')\n', '');
+    toast("Imagen subida e insertada");
+
+  } catch(e) {
+    toast("Error subiendo: " + e.message);
+  } finally {
+    ind.style.display = 'none';
+    e.target.value = ''; // Reset input
+  }
+}
+
+// ==========================================
+// DISCUSIÓN (COMENTARIOS)
+// ==========================================
+async function loadComments() {
+  const list = document.getElementById('comments-list');
+  list.innerHTML = '<div class="spinner"></div> Cargando comentarios...';
+  
+  try {
+    const { data, error } = await sbClient.from('wiki_comments')
+      .select('*')
+      .eq('page_id', currentPage.id)
+      .order('created_at', { ascending: true });
+      
+    if (error) throw error;
+    
+    list.innerHTML = '';
+    if (data.length === 0) {
+      list.innerHTML = '<p style="color:#54595d; font-style:italic;">Aún no hay discusiones sobre esta página. ¡Sé el primero!</p>';
+    } else {
+      data.forEach(c => {
+        const date = new Date(c.created_at).toLocaleString('es-ES');
+        list.innerHTML += `
+          <div class="comment-box">
+            <div class="comment-meta">
+              <span><b>${DOMPurify.sanitize(c.author)}</b> comentó el ${date}:</span>
+              <button class="delete-comment-btn" onclick="deleteComment('${c.id}')">[borrar]</button>
+            </div>
+            <div class="comment-body">${DOMPurify.sanitize(c.body)}</div>
+          </div>
+        `;
+      });
+    }
+  } catch(e) {
+    list.innerHTML = '<p style="color:red">Error cargando comentarios.</p>';
+  }
+}
+
+async function submitComment() {
+  const author = document.getElementById('comment-author').value.trim() || 'Anónimo';
+  const body = document.getElementById('comment-body').value.trim();
+  
+  if (!body) return toast("El comentario no puede estar vacío");
+  
+  try {
+    const { error } = await sbClient.from('wiki_comments').insert({
+      page_id: currentPage.id,
+      author: author,
+      body: body
+    });
+    if (error) throw error;
+    
+    document.getElementById('comment-body').value = '';
+    toast("Comentario publicado");
+    loadComments();
+    
+  } catch(e) { toast("Error: " + e.message); }
+}
+
+async function deleteComment(id) {
+  if (!confirm("¿Borrar este comentario?")) return;
+  try {
+    const { error } = await sbClient.from('wiki_comments').delete().eq('id', id);
+    if (error) throw error;
+    loadComments();
+  } catch(e) { toast("Error al borrar: " + e.message); }
+}
+
+// ==========================================
+// UTILIDADES
+// ==========================================
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 3000);
+}
+
+function showLoader(show) {
+  document.getElementById('loader').style.display = show ? 'block' : 'none';
+}
 </script>
 </body>
 </html>
