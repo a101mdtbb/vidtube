@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Elige tu destino</title>
+<style>
+  :root{
+    --bg:#0f0f0f; --surface:#1a1a1a; --surface2:#272727; --border:#2e2e2e;
+    --accent:#ff4444; --accent2:#ff6b6b; --text:#f1f1f1; --muted:#aaaaaa;
+    --wiki:#4a90e2; --wiki2:#6ba8ec;
+    --font:'Segoe UI', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    background:var(--bg); color:var(--text); font-family:var(--font);
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:24px;
+    text-align:center;
+  }
+  h1{font-size:1.6rem; font-weight:800; margin-bottom:8px;}
+  h1 span{color:var(--accent);}
+  p.sub{color:var(--muted); margin-bottom:36px; font-size:.95rem;}
+  .options{
+    display:flex; gap:20px; flex-wrap:wrap; justify-content:center;
+    width:100%; max-width:680px;
+  }
+  .card{
+    flex:1 1 260px; background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:32px 24px; text-decoration:none; color:var(--text);
+    transition:transform .2s, border-color .2s; cursor:pointer;
+  }
+  .card:hover{transform:translateY(-4px);}
+  .icon{font-size:2.6rem; margin-bottom:14px; display:block;}
+  .card h2{font-size:1.2rem; margin-bottom:8px;}
+  .card p{font-size:.85rem; color:var(--muted); line-height:1.5;}
+  .card.vid:hover{border-color:var(--accent);}
+  .card.vid .icon{color:var(--accent);}
+  .card.wiki:hover{border-color:var(--wiki);}
+  .card.wiki .icon{color:var(--wiki);}
+  .btn{
+    display:inline-block; margin-top:18px; padding:10px 22px; border-radius:10px;
+    font-weight:700; font-size:.85rem; color:#fff;
+  }
+  .card.vid .btn{background:var(--accent);}
+  .card.wiki .btn{background:var(--wiki);}
+  footer{margin-top:40px; color:var(--muted); font-size:.75rem;}
+</style>
+</head>
+<body>
+  <h1>Bienvenido a <span>VidTube</span></h1>
+  <p class="sub">¿Qué quieres abrir?</p>
+
+  <div class="options">
+    <a class="card vid" href="vidtube.html">
+      <span class="icon">▶️</span>
+      <h2>VidTube</h2>
+      <p>Mira y publica videos de YouTube alojados por la comunidad.</p>
+      <span class="btn">Entrar</span>
+    </a>
+
+    <a class="card wiki" href="wiki.html">
+      <span class="icon">📖</span>
+      <h2>Wiki</h2>
+      <p>Crea y edita artículos libremente, sin necesidad de registrarte.</p>
+      <span class="btn">Entrar</span>
+    </a>
+  </div>
+
+  <footer>VidTube &amp; Wiki · hecho con Supabase</footer>
+</body>
+</html>

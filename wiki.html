@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Wiki</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --bg:#101113; --surface:#191a1d; --surface2:#222327; --border:#2c2d31;
+    --accent:#4a90e2; --accent2:#6ba8ec; --text:#eef0f2; --muted:#9aa0a8;
+    --radius:10px; --font:'Segoe UI', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh;}
+  a{color:var(--accent); text-decoration:none;}
+
+  nav{
+    position:sticky; top:0; z-index:100; background:rgba(16,17,19,.97); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border); display:flex; align-items:center;
+    padding:0 12px; height:54px; gap:8px;
+    padding-left:max(12px, env(safe-area-inset-left));
+    padding-right:max(12px, env(safe-area-inset-right));
+  }
+  .logo{font-size:1.2rem; font-weight:800; color:var(--accent); white-space:nowrap; flex-shrink:0;}
+  .logo span{color:var(--text);}
+  .back{color:var(--muted); font-size:.85rem; flex-shrink:0; white-space:nowrap;}
+  .search-bar{flex:1; display:flex; min-width:0;}
+  .search-bar input{
+    flex:1; min-width:0; background:var(--surface); border:1px solid var(--border);
+    border-right:none; border-radius:var(--radius) 0 0 var(--radius);
+    padding:8px 12px; color:var(--text); font-size:16px; outline:none;
+  }
+  .search-bar input:focus{border-color:var(--accent);}
+  .search-bar button{
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:0 var(--radius) var(--radius) 0; padding:8px 12px; color:var(--muted);
+    cursor:pointer; flex-shrink:0;
+  }
+  .btn-new{
+    background:var(--accent); color:#fff; border:none; padding:8px 13px;
+    border-radius:var(--radius); font-weight:700; cursor:pointer; font-size:.85rem;
+    white-space:nowrap; flex-shrink:0;
+  }
+
+  #config-banner{
+    background:linear-gradient(135deg,#0a131f,#10182a); border:1px solid #15355a;
+    border-radius:var(--radius); padding:20px; margin:20px 12px;
+  }
+  #config-banner h2{color:var(--accent); margin-bottom:10px; font-size:1rem;}
+  #config-banner p{color:var(--muted); font-size:.85rem; margin-bottom:14px; line-height:1.6;}
+  .config-fields{display:flex; flex-direction:column; gap:10px;}
+  .config-fields input{
+    background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-size:16px; outline:none;
+    font-family:monospace; width:100%;
+  }
+  .btn-save{
+    background:var(--accent); color:#fff; border:none; padding:12px 20px;
+    border-radius:8px; font-weight:600; cursor:pointer; width:100%; font-size:1rem;
+  }
+
+  main{max-width:900px; margin:0 auto; padding:20px 16px;}
+
+  /* list view */
+  #list-title{font-size:1.3rem; font-weight:800; margin-bottom:4px;}
+  #list-sub{color:var(--muted); font-size:.85rem; margin-bottom:18px;}
+  .page-item{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:border-color .15s;
+  }
+  .page-item:hover{border-color:var(--accent);}
+  .page-item h3{font-size:1rem; margin-bottom:4px;}
+  .page-item p{font-size:.82rem; color:var(--muted); line-height:1.4;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .page-meta{font-size:.72rem; color:#6b7178; margin-top:6px;}
+
+  #empty{text-align:center; padding:60px 20px; color:var(--muted);}
+  #empty .icon{font-size:2.5rem; margin-bottom:10px;}
+
+  .spinner{
+    width:34px; height:34px; border:3px solid var(--border); border-top-color:var(--accent);
+    border-radius:50%; margin:60px auto; animation:spin .8s linear infinite; display:none;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* article view */
+  #article-view{display:none;}
+  .article-header{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:6px;}
+  #article-title{font-size:1.6rem; font-weight:800; line-height:1.3;}
+  .article-actions{display:flex; gap:8px; flex-shrink:0;}
+  .icon-btn{
+    background:var(--surface2); border:1px solid var(--border); color:var(--muted);
+    padding:8px 12px; border-radius:8px; cursor:pointer; font-size:.8rem;
+  }
+  .icon-btn:hover{color:var(--text); border-color:var(--accent);}
+  .icon-btn.danger:hover{color:#ff5555; border-color:#ff5555;}
+  #article-meta{color:var(--muted); font-size:.78rem; margin-bottom:18px;}
+  #article-body{font-size:.98rem; line-height:1.75; white-space:pre-wrap; word-wrap:break-word;}
+  .back-link{display:inline-block; margin-bottom:16px; color:var(--muted); font-size:.85rem; cursor:pointer;}
+  .back-link:hover{color:var(--text);}
+
+  /* editor view */
+  #editor-view{display:none;}
+  #editor-view label{font-size:.83rem; color:var(--muted); display:block; margin-bottom:6px;}
+  #editor-view input, #editor-view textarea{
+    width:100%; background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-size:16px; outline:none; font-family:var(--font);
+    margin-bottom:16px;
+  }
+  #editor-view input:focus, #editor-view textarea:focus{border-color:var(--accent);}
+  #editor-view textarea{min-height:340px; resize:vertical; line-height:1.6; font-size:.95rem;}
+  .editor-hint{font-size:.78rem; color:#6b7178; margin-top:-10px; margin-bottom:16px;}
+  .editor-actions{display:flex; gap:10px;}
+  .btn-submit{
+    background:var(--accent); color:#fff; border:none; padding:12px 22px;
+    border-radius:8px; font-weight:700; cursor:pointer; font-size:.9rem;
+  }
+  .btn-cancel{
+    background:var(--surface2); color:var(--text); border:1px solid var(--border);
+    padding:12px 22px; border-radius:8px; font-weight:600; cursor:pointer; font-size:.9rem;
+  }
+
+  /* confirm delete */
+  .overlay{
+    display:none; position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.85);
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .overlay.open{display:flex;}
+  .confirm-modal{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:24px; max-width:340px; width:100%; text-align:center;
+  }
+  .confirm-modal h3{margin-bottom:8px;}
+  .confirm-modal p{color:var(--muted); font-size:.85rem; margin-bottom:20px;}
+  .confirm-btns{display:flex; gap:10px;}
+  .confirm-btns button{flex:1; padding:11px; border-radius:8px; font-weight:600; cursor:pointer; border:none; font-size:.9rem;}
+  .btn-cancel2{background:var(--surface2); color:var(--text); border:1px solid var(--border) !important;}
+  .btn-danger{background:#ff4444; color:#fff;}
+
+  #toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px);
+    background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    padding:12px 20px; border-radius:10px; font-size:.85rem; opacity:0; transition:all .3s;
+    z-index:300; max-width:90vw;
+  }
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  #toast.error{border-color:#ff4444; color:#ff8888;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">Wiki<span>libre</span></a>
+  <a class="back" href="index.html">↩ Inicio</a>
+  <div class="search-bar">
+    <input id="search-input" type="text" placeholder="Buscar artículos…" />
+    <button onclick="doSearch()">🔍</button>
+  </div>
+  <button class="btn-new" onclick="openEditor()">+ Nuevo</button>
+</nav>
+
+<div id="config-banner" style="display:none">
+  <h2>⚙️ Configura Supabase</h2>
+  <p>Pega tus credenciales de <a href="https://supabase.com" target="_blank">supabase.com</a> para activar la wiki. (Si ya configuraste VidTube con el mismo proyecto, esto se completará solo).</p>
+  <div class="config-fields">
+    <input id="cfg-url" type="text" placeholder="Project URL → https://xxxx.supabase.co" autocomplete="off" />
+    <input id="cfg-key" type="text" placeholder="Publishable key → sb_publishable_…" autocomplete="off" />
+    <button class="btn-save" onclick="saveConfig()">Guardar y conectar</button>
+  </div>
+</div>
+
+<main>
+  <div class="spinner" id="loader"></div>
+
+  <!-- LIST VIEW -->
+  <div id="list-view">
+    <div id="list-title">📖 Artículos</div>
+    <div id="list-sub">Cualquiera puede crear o editar una página, sin registrarse.</div>
+    <div id="page-list"></div>
+  </div>
+
+  <!-- ARTICLE VIEW -->
+  <div id="article-view">
+    <div class="back-link" onclick="showList()">← Volver a la lista</div>
+    <div class="article-header">
+      <div id="article-title"></div>
+      <div class="article-actions">
+        <button class="icon-btn" onclick="editCurrent()">✏️ Editar</button>
+        <button class="icon-btn danger" onclick="askDelete()">🗑</button>
+      </div>
+    </div>
+    <div id="article-meta"></div>
+    <div id="article-body"></div>
+  </div>
+
+  <!-- EDITOR VIEW -->
+  <div id="editor-view">
+    <div class="back-link" onclick="cancelEdit()">← Cancelar</div>
+    <label>Título del artículo *</label>
+    <input id="ed-title" type="text" placeholder="Ej: Historia de la República Dominicana" />
+    <label>Contenido *</label>
+    <textarea id="ed-body" placeholder="Escribe el artículo aquí…"></textarea>
+    <div class="editor-hint">Texto plano. Los saltos de línea se respetan.</div>
+    <div class="editor-actions">
+      <button class="btn-submit" id="btn-ed-submit" onclick="submitPage()">Guardar artículo</button>
+      <button class="btn-cancel" onclick="cancelEdit()">Cancelar</button>
+    </div>
+  </div>
+</main>
+
+<!-- CONFIRM DELETE -->
+<div class="overlay" id="confirm-overlay">
+  <div class="confirm-modal">
+    <h3>¿Eliminar artículo?</h3>
+    <p>Esta acción no se puede deshacer.</p>
+    <div class="confirm-btns">
+      <button class="btn-cancel2" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn-danger" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const STORAGE_KEY_URL = 'vt_supabase_url'; // mismas claves que VidTube → comparten config
+const STORAGE_KEY_KEY = 'vt_supabase_key';
+const TABLE = 'wiki_pages';
+
+let sbClient = null, allPages = [], currentPage = null, editingId = null;
+
+// ── CONFIG ────────────────────────────────────────────
+function saveConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const key = document.getElementById('cfg-key').value.trim();
+  if (!url || !key) { toast('Completa ambos campos', true); return; }
+  localStorage.setItem(STORAGE_KEY_URL, url);
+  localStorage.setItem(STORAGE_KEY_KEY, key);
+  document.getElementById('config-banner').style.display = 'none';
+  initSupabase(url, key); loadPages();
+}
+function initSupabase(url, key) { sbClient = window.supabase.createClient(url, key); }
+
+window.addEventListener('DOMContentLoaded', () => {
+  const url = localStorage.getItem(STORAGE_KEY_URL) || '';
+  const key = localStorage.getItem(STORAGE_KEY_KEY) || '';
+  if (url && key) { initSupabase(url, key); loadPages(); }
+  else { document.getElementById('config-banner').style.display = 'block'; }
+});
+
+// ── LOAD ─────────────────────────────────────────────
+async function loadPages() {
+  document.getElementById('loader').style.display = 'block';
+  document.getElementById('page-list').innerHTML = '';
+  try {
+    const { data, error } = await sbClient.from(TABLE).select('*').order('updated_at', { ascending: false });
+    if (error) throw error;
+    allPages = data || [];
+    renderList(allPages);
+  } catch(e) { toast('Error al cargar: '+e.message, true); renderList([]); }
+  finally { document.getElementById('loader').style.display = 'none'; }
+}
+
+function renderList(pages) {
+  const list = document.getElementById('page-list');
+  if (!pages.length) {
+    list.innerHTML = `<div id="empty"><div class="icon">📭</div><h3>No hay artículos aún</h3><p>¡Crea el primero!</p></div>`;
+    return;
+  }
+  list.innerHTML = pages.map(p => `
+    <div class="page-item" onclick="openArticle('${p.id}')">
+      <h3>${esc(p.title)}</h3>
+      <p>${esc((p.content||'').slice(0,160))}</p>
+      <div class="page-meta">Editado el ${new Date(p.updated_at||p.created_at).toLocaleDateString('es-DO',{day:'numeric',month:'short',year:'numeric'})}</div>
+    </div>`).join('');
+}
+
+// ── SEARCH ────────────────────────────────────────────
+function doSearch() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  if (!q) { renderList(allPages); return; }
+  renderList(allPages.filter(p => p.title.toLowerCase().includes(q) || (p.content||'').toLowerCase().includes(q)));
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement === document.getElementById('search-input')) doSearch();
+  if (e.key === 'Escape') { closeConfirm(); }
+});
+
+// ── VIEWS ─────────────────────────────────────────────
+function showList() {
+  document.getElementById('list-view').style.display = 'block';
+  document.getElementById('article-view').style.display = 'none';
+  document.getElementById('editor-view').style.display = 'none';
+  currentPage = null;
+}
+function openArticle(id) {
+  const p = allPages.find(x => x.id === id); if (!p) return;
+  currentPage = p;
+  document.getElementById('article-title').textContent = p.title;
+  document.getElementById('article-body').textContent = p.content || '';
+  const date = new Date(p.updated_at||p.created_at).toLocaleDateString('es-DO',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('article-meta').textContent = `Última edición: ${date}`;
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('editor-view').style.display = 'none';
+  document.getElementById('article-view').style.display = 'block';
+}
+
+// ── EDITOR ────────────────────────────────────────────
+function openEditor() {
+  if (!sbClient) { toast('Configura Supabase primero', true); return; }
+  editingId = null;
+  document.getElementById('ed-title').value = '';
+  document.getElementById('ed-body').value = '';
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('article-view').style.display = 'none';
+  document.getElementById('editor-view').style.display = 'block';
+}
+function editCurrent() {
+  if (!currentPage) return;
+  editingId = currentPage.id;
+  document.getElementById('ed-title').value = currentPage.title;
+  document.getElementById('ed-body').value = currentPage.content || '';
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('article-view').style.display = 'none';
+  document.getElementById('editor-view').style.display = 'block';
+}
+function cancelEdit() {
+  if (currentPage) openArticle(currentPage.id); else showList();
+}
+async function submitPage() {
+  const title = document.getElementById('ed-title').value.trim();
+  const body  = document.getElementById('ed-body').value.trim();
+  if (!title) { toast('El título es obligatorio', true); return; }
+  if (!body)  { toast('El contenido es obligatorio', true); return; }
+  const btn = document.getElementById('btn-ed-submit');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    if (editingId) {
+      const { error } = await sbClient.from(TABLE).update({ title, content: body, updated_at: new Date().toISOString() }).eq('id', editingId);
+      if (error) throw error;
+      toast('Artículo actualizado');
+    } else {
+      const { data, error } = await sbClient.from(TABLE).insert({ title, content: body, updated_at: new Date().toISOString() }).select();
+      if (error) throw error;
+      toast('Artículo publicado 🎉');
+      if (data && data[0]) editingId = data[0].id;
+    }
+    await loadPages();
+    const p = allPages.find(x => x.id === editingId);
+    if (p) openArticle(p.id); else showList();
+  } catch(e) { toast('Error: '+e.message, true); }
+  finally { btn.disabled = false; btn.textContent = 'Guardar artículo'; }
+}
+
+// ── DELETE ────────────────────────────────────────────
+function askDelete() { if (!currentPage) return; document.getElementById('confirm-overlay').classList.add('open'); }
+function closeConfirm() { document.getElementById('confirm-overlay').classList.remove('open'); }
+async function confirmDelete() {
+  if (!currentPage) return;
+  try {
+    const { error } = await sbClient.from(TABLE).delete().eq('id', currentPage.id);
+    if (error) throw error;
+    toast('Artículo eliminado');
+    closeConfirm();
+    await loadPages();
+    showList();
+  } catch(e) { toast('Error: '+e.message, true); }
+}
+
+// ── UTIL ──────────────────────────────────────────────
+function toast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show' + (isError ? ' error' : '');
+  clearTimeout(t._timer); t._timer = setTimeout(() => t.className = '', 3200);
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
